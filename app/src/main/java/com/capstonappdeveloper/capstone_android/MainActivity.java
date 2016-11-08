@@ -4,10 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoFileNavigator;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -78,5 +80,11 @@ public class MainActivity extends AppCompatActivity
         /*Intent intent = new Intent(this, DisplayEventsActivity.class);
           startActivity(intent);
         */
+    }
+
+    public void testVideoUpload(View v) {
+        Log.d("TESTING VIDEO UPLOAD", "TESTING THIS SHIT MOTHERFUCKA");
+        VideoFileNavigator.getVideoFromInternalStorage(this, "");
+        //VideoUploader.uploadVideo("blah.mp4");
     }
 }
