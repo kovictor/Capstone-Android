@@ -15,15 +15,16 @@
 
 
     <android.support.design.widget.FloatingActionButton
+        android:id="@+id/menufab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
         app:srcCompat="@android:drawable/arrow_up_float"
-        android:id="@+id/floatingActionButton"
         app:backgroundTint="?attr/actionMenuTextColor"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:onClick="onMenuButtonClick"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -34,7 +35,8 @@
         app:layout_anchorGravity="bottom|center_horizontal"
         app:backgroundTint="@android:color/black"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:onClick="onCameraButtonClick"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
