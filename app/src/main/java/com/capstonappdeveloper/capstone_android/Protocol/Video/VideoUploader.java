@@ -1,5 +1,6 @@
 package com.capstonappdeveloper.capstone_android.Protocol.Video;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -18,38 +19,37 @@ import java.net.URL;
  * Uploads a video from Android to server
  * TODO:We'd ideally like to also perform a number of checks for correct file format/video length
  */
-public class VideoUploader {
-    private static String SERVER_URI = "ec2-54-71-87-84.us-west-2.compute.amazonaws.com/src/php/uploadVideo.php";
+public class VideoUploader extends AsyncTask<String, String, String> {
+    //this currently points to my test server, change accordingly
+    private static String SERVER_URI = "http://ec2-54-71-87-84.us-west-2.compute.amazonaws.com/src/php/uploadVideo.php";
     private static String TWO_HYPHENS = "--";
     private static String BOUNDARY = "*****";
     private static String LINE_END = "\r\n";
-    private static int MAX_BUFFER_SIZE = 1 * 1024 * 1024;
+    //set the max buffer size to 100MB, as specified on our apache server in /etc/php.ini
+    private static int MAX_BUFFER_SIZE = 100 * ((2 << 19) - 1);
 
-    public static HttpURLConnection prepareConnectionForUpload(URL url, String fileName) {
-        HttpURLConnection conn = null;
-        try {
-            conn = (HttpURLConnection) url.openConnection(); // Open a HTTP  connection to  the URL
-        } catch(Exception e) {
-            //damn something went wrong?
-            return null;
-        }
-        conn.setDoInput(true); // Allow Inputs
-        conn.setDoOutput(true); // Allow Outputs
-        conn.setUseCaches(false); // Don't use a Cached Copy
-        try {
-            conn.setRequestMethod("POST");
-        } catch(Exception e) {
-            //this technically should never fail
-            //just disregard this exception
-        }
-        conn.setRequestProperty("Connection", "Keep-Alive");
-        conn.setRequestProperty("ENCTYPE", "multipart/form-data");
-        conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + BOUNDARY);
-        conn.setRequestProperty("uploaded_file", fileName);
-        return conn;
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        // Shows Progress Bar Dialog and then call doInBackground method
     }
 
-    public static int uploadVideo(String sourceFileUri) {
+    @Override
+    protected String doInBackground(String... sourceFileUri) {
+        uploadVideo(sourceFileUri[0]);
+        return null;
+    }
+
+    @Override
+    protected void onPostExecute(String file_url) {
+
+    }
+
+    protected void onProgressUpdate(String... progress) {
+
+    }
+
+    private static void uploadVideo(String sourceFileUri) {
         // String [] string = sourceFileUri;
         String fileName = sourceFileUri;
 
@@ -63,23 +63,31 @@ public class VideoUploader {
 
         File sourceFile = new File(sourceFileUri);
         if (!sourceFile.isFile()) {
-            Log.e("Huzza", "Source File Does not exist");
-            return 0;
+            Log.e("Huzza", "Source File Does not exist: " + sourceFileUri);
+            return;
         }
         try { // open a URL connection to the Servlet
             FileInputStream fileInputStream = new FileInputStream(sourceFile);
+            bytesAvailable = fileInputStream.available(); // create a buffer of  maximum size
+            Log.d("Huzza", "Initial capstone .available : " + bytesAvailable);
+
+            bufferSize = Math.min(bytesAvailable, MAX_BUFFER_SIZE);
             URL url = new URL(SERVER_URI);
-            conn = prepareConnectionForUpload(url, fileName);
+            conn = (HttpURLConnection) url.openConnection(); // Open a HTTP  connection to  the URL
+            conn.setDoInput(true); // Allow Inputs
+            conn.setDoOutput(true); // Allow Outputs
+            conn.setUseCaches(false); // Don't use a Cached Copy
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Connection", "Keep-Alive");
+            conn.setRequestProperty("ENCTYPE", "multipart/form-data");
+            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + BOUNDARY);
+            conn.setRequestProperty("file", fileName);
             dos = new DataOutputStream(conn.getOutputStream());
 
             dos.writeBytes(TWO_HYPHENS + BOUNDARY + LINE_END);
-            dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\""+ fileName + "\"" + LINE_END);
+            dos.writeBytes("Content-Disposition: form-data; name=\"file\";filename=\""+ fileName + "\"" + LINE_END);
             dos.writeBytes(LINE_END);
 
-            bytesAvailable = fileInputStream.available(); // create a buffer of  maximum size
-            Log.i("Huzza", "Initial .available : " + bytesAvailable);
-
-            bufferSize = Math.min(bytesAvailable, MAX_BUFFER_SIZE);
             buffer = new byte[bufferSize];
 
             // read file and write it into form...
@@ -100,30 +108,29 @@ public class VideoUploader {
             serverResponseCode = conn.getResponseCode();
             String serverResponseMessage = conn.getResponseMessage();
 
-            Log.i("Upload file to server", "HTTP Response is : " + serverResponseMessage + ": " + serverResponseCode);
+            Log.i("Upload file to server", "HTTP capstone Response is : " + serverResponseMessage + ": " + serverResponseCode);
             // close streams
-            Log.i("Upload file to server", fileName + " File is written");
+            Log.i("Upload file to server", fileName + " File capstone is written");
             fileInputStream.close();
             dos.flush();
             dos.close();
+            //this block will give the response of upload link
+            try {
+                BufferedReader rd = new BufferedReader(new InputStreamReader(conn
+                        .getInputStream()));
+                String line;
+                while ((line = rd.readLine()) != null) {
+                    Log.i("Huzza", "RES capstone Message: " + line);
+                }
+                rd.close();
+            } catch (IOException ioex) {
+                Log.e("Huzza", "error capstone: " + ioex.getMessage(), ioex);
+            }
         } catch (MalformedURLException ex) {
             ex.printStackTrace();
-            Log.e("Upload file to server", "error: " + ex.getMessage(), ex);
+            Log.e("Upload file to server", "error capstone: " + ex.getMessage(), ex);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //this block will give the response of upload link
-        try {
-            BufferedReader rd = new BufferedReader(new InputStreamReader(conn
-                    .getInputStream()));
-            String line;
-            while ((line = rd.readLine()) != null) {
-                Log.i("Huzza", "RES Message: " + line);
-            }
-            rd.close();
-        } catch (IOException ioex) {
-            Log.e("Huzza", "error: " + ioex.getMessage(), ioex);
-        }
-        return serverResponseCode;  // like 200 (Ok)
     }
 }
