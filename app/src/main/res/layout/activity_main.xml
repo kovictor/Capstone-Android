@@ -1,27 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context="com.capstonappdeveloper.capstone_android.MainActivity">
+    android:layout_height="match_parent">
 
-
-    <include layout="@layout/content_main"
-        android:id="@+id/include"
-        android:layout_height="match_parent"
+    <include
+        layout="@layout/title_bar"
         android:layout_width="match_parent"
-    />
+        android:layout_height="@dimen/tool_bar_height"
+        android:layout_alignParentTop="true"/>
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
+    <include
+        layout="@layout/content_main"/>
+
+    <include
+        layout="@layout/tool_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        app:popupTheme="@style/AppTheme.PopupOverlay"
-        app:title="Scope"
-        android:theme="@style/AppTheme"
-        android:layout_weight="1" />
+        android:layout_height="@dimen/tool_bar_height"
+        android:layout_alignParentBottom="true"/>
 
-</android.support.design.widget.CoordinatorLayout>
+</RelativeLayout>
