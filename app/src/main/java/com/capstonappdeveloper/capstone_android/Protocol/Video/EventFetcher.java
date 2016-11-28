@@ -3,7 +3,6 @@ package com.capstonappdeveloper.capstone_android.Protocol.Video;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.capstonappdeveloper.capstone_android.StaticResources;
 import com.google.android.gms.maps.GoogleMap;
@@ -71,36 +70,33 @@ public class EventFetcher extends AsyncTask<String, String, String> {
     private void fetchEvents(LatLng currentLocation) {
         HttpURLConnection conn = null;
         try {
-            Log.d("blach", formURL(currentLocation));
             URL url = new URL(formURL(currentLocation));
 
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
 
-            InputStream in = conn.getInputStream();
-            InputStreamReader isw = new InputStreamReader(in);
-
             String response = "";
 
-            BufferedReader rd = new BufferedReader(new InputStreamReader(conn
-                    .getInputStream()));
+            BufferedReader rd = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream()));
             String line;
             while ((line = rd.readLine()) != null) {
-                Log.i("Huzza", "RES capstone Message: " + line);
                 response = response + line;
             }
+
+            //parse JSON
             rows = new ArrayList<Event>();
             JSONArray array = new JSONArray(response);
             for(int i=0;i<array.length();i++) {
-                //HashMap<String, String> map = new HashMap<String, String>();
                 JSONObject e = array.getJSONObject(i);
 
                 int id = e.getInt("id");
                 double longitude = e.getDouble("longitude");
                 double latitude = e.getDouble("latitude");
-                Log.d("blah", "MYSQL RESULT ROW: icon=" + e.getString("icon"));
                 URL iconUrl = new URL(e.getString("icon"));
+
                 Bitmap bmp = BitmapFactory.decodeStream(iconUrl.openConnection().getInputStream());
+
                 rows.add(new Event(id, longitude, latitude, bmp));
             }
             rd.close();
@@ -115,7 +111,7 @@ public class EventFetcher extends AsyncTask<String, String, String> {
 
     @Override
     protected void onPostExecute(String string) {
-        //parse JSON
+        //grab the events and pin them on the map
         for (Event event : rows) {
             map.addMarker(new MarkerOptions()
                     .position(new LatLng(event.latitude, event.longitude))

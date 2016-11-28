@@ -12,6 +12,11 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
     }
+
+    dexOptions {
+        javaMaxHeapSize "2048M"
+    }
+
     buildTypes {
         debug {
             debuggable true

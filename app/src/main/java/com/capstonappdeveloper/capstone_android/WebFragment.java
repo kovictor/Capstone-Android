@@ -29,14 +29,12 @@ public class WebFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container,
                              Bundle savedInstanceState) {
-
-        View view = inflater
-                .inflate(R.layout.webview_layout, container, false);
+        View view = inflater.inflate(R.layout.webview_layout, container, false);
 
         if (URL != null) {
             WebView webview = (WebView) view.findViewById(R.id.web);
             webview.getSettings().setJavaScriptEnabled(true);
-            webview.setWebViewClient(new webClient());
+            webview.setWebViewClient(new WebViewClient());
             webview.loadUrl(URL);
         }
         return view;
@@ -48,12 +46,4 @@ public class WebFragment extends Fragment {
         webview.getSettings().setJavaScriptEnabled(true);
         webview.loadUrl(url);
     }
-
-    private class webClient extends WebViewClient {
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            return false;
-        }
-    }
-
 }

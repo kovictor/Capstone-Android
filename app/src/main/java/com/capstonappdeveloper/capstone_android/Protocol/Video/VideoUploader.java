@@ -10,10 +10,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -118,20 +116,13 @@ public class VideoUploader extends AsyncTask<String, String, String> {
             dos.flush();
             dos.close();
             //this block will give the response of upload link
-            try {
-                BufferedReader rd = new BufferedReader(new InputStreamReader(conn
-                        .getInputStream()));
-                String line;
-                while ((line = rd.readLine()) != null) {
-                    Log.i("Huzza", "RES capstone Message: " + line);
-                }
-                rd.close();
-            } catch (IOException ioex) {
-                Log.e("Huzza", "error capstone: " + ioex.getMessage(), ioex);
+            BufferedReader rd = new BufferedReader(new InputStreamReader(conn
+                    .getInputStream()));
+            String line;
+            while ((line = rd.readLine()) != null) {
+                Log.i("Huzza", "RES capstone Message: " + line);
             }
-        } catch (MalformedURLException ex) {
-            ex.printStackTrace();
-            Log.e("Upload file to server", "error capstone: " + ex.getMessage(), ex);
+            rd.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -6,6 +6,8 @@ import android.support.v4.app.FragmentActivity;
 import android.view.View;
 
 import com.capstonappdeveloper.capstone_android.Protocol.Video.EventFetcher;
+import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoFileNavigator;
+import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoUploader;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -41,8 +43,10 @@ public class MainActivity extends FragmentActivity
     }
 
     public void switchToMap() {
-        mapFragment = new SupportMapFragment();
-        mapFragment.getMapAsync(this);
+        if (mapFragment == null) {
+            mapFragment = new SupportMapFragment();
+            mapFragment.getMapAsync(this);
+        }
 
         getSupportFragmentManager()
                 .beginTransaction()
@@ -52,8 +56,10 @@ public class MainActivity extends FragmentActivity
 
     public void switchToWebView(View v) {
         //switch to webview for viewing 3D model
-        webFragment = new WebFragment();
-        webFragment.init("http://ec2-54-71-87-84.us-west-2.compute.amazonaws.com/");
+        if (webFragment == null) {
+            webFragment = new WebFragment();
+            webFragment.init("http://ec2-54-71-87-84.us-west-2.compute.amazonaws.com/");
+        }
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container, webFragment)
@@ -75,6 +81,6 @@ public class MainActivity extends FragmentActivity
 
     public void testVideoUpload(View v) {
         //VideoFileNavigator.getVideoFromInternalStorage(this, "");
-        //new VideoUploader().execute(VideoFileNavigator.getVideoFromInternalStorage(this, ""));
+        new VideoUploader().execute(VideoFileNavigator.getVideoFromInternalStorage(this, ""));
     }
 }
