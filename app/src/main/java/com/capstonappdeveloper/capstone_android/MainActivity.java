@@ -47,6 +47,12 @@ public class MainActivity extends FragmentActivity
 
     public void switchToWebView(View v) {
         //switch to webview for viewing 3D model
+        WebFragment webFragment = new WebFragment();
+        webFragment.init("http://ec2-54-71-87-84.us-west-2.compute.amazonaws.com/");
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, webFragment)
+                .commit();
     }
 
     public void onCameraButtonClick(View v) {
