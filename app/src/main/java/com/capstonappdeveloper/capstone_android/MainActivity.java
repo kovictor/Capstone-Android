@@ -6,11 +6,11 @@ import android.support.v4.app.FragmentActivity;
 import android.view.View;
 
 import com.capstonappdeveloper.capstone_android.Protocol.Video.EventFetcher;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 /**
  * For now, we're just swapping fragments into the framelayout "fragment_container"
@@ -20,20 +20,24 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class MainActivity extends FragmentActivity
     implements OnMapReadyCallback{
     SupportMapFragment mapFragment;
+    LatLng homeLocation;
+    GoogleMap map;
     WebFragment webFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        homeLocation = new LatLng(43.6532, -79.3832);
         switchToMap();
     }
 
     @Override
     public void onMapReady(GoogleMap map) {
-        map.addMarker(new MarkerOptions()
-                .position(new LatLng(0, 0))
-                .title("Marker"));
+        this.map = map;
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(homeLocation, 10.0f));
+        new EventFetcher(map, homeLocation).execute();
+
     }
 
     public void switchToMap() {
@@ -72,6 +76,5 @@ public class MainActivity extends FragmentActivity
     public void testVideoUpload(View v) {
         //VideoFileNavigator.getVideoFromInternalStorage(this, "");
         //new VideoUploader().execute(VideoFileNavigator.getVideoFromInternalStorage(this, ""));
-        new EventFetcher(new LatLng(43.6532, -79.3832)).execute();
     }
 }

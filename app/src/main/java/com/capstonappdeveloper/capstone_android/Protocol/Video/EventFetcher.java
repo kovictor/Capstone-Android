@@ -1,27 +1,51 @@
 package com.capstonappdeveloper.capstone_android.Protocol.Video;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import com.capstonappdeveloper.capstone_android.StaticResources;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * Created by james on 2016-11-28.
  */
 public class EventFetcher extends AsyncTask<String, String, String> {
 
-    private LatLng location;
+    private class Event {
+        int id;
+        double longitude;
+        double latitude;
+        Bitmap icon;
+        public Event(int id, double longitude, double latitude, Bitmap icon) {
+            this.id = id;
+            this.longitude = longitude;
+            this.latitude = latitude;
+            this.icon = icon;
+        }
+    }
 
-    public EventFetcher(LatLng currentLocation) {
+    private ArrayList<Event> rows;
+    private LatLng location;
+    private GoogleMap map;
+
+    public EventFetcher(GoogleMap map, LatLng currentLocation) {
         this.location = currentLocation;
+        this.map = map;
     }
 
     @Override
@@ -31,7 +55,7 @@ public class EventFetcher extends AsyncTask<String, String, String> {
     }
 
     @Override
-    protected String doInBackground(String... sourceFileUri) {
+    protected String doInBackground(String... string) {
         fetchEvents(this.location);
         return null;
     }
@@ -56,19 +80,32 @@ public class EventFetcher extends AsyncTask<String, String, String> {
             InputStream in = conn.getInputStream();
             InputStreamReader isw = new InputStreamReader(in);
 
-            try {
-                BufferedReader rd = new BufferedReader(new InputStreamReader(conn
-                        .getInputStream()));
-                String line;
-                while ((line = rd.readLine()) != null) {
-                    Log.i("Huzza", "RES capstone Message: " + line);
-                }
-                rd.close();
-            } catch (IOException ioex) {
-                Log.e("Huzza", "error capstone: " + ioex.getMessage(), ioex);
+            String response = "";
+
+            BufferedReader rd = new BufferedReader(new InputStreamReader(conn
+                    .getInputStream()));
+            String line;
+            while ((line = rd.readLine()) != null) {
+                Log.i("Huzza", "RES capstone Message: " + line);
+                response = response + line;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            rows = new ArrayList<Event>();
+            JSONArray array = new JSONArray(response);
+            for(int i=0;i<array.length();i++) {
+                //HashMap<String, String> map = new HashMap<String, String>();
+                JSONObject e = array.getJSONObject(i);
+
+                int id = e.getInt("id");
+                double longitude = e.getDouble("longitude");
+                double latitude = e.getDouble("latitude");
+                Log.d("blah", "MYSQL RESULT ROW: icon=" + e.getString("icon"));
+                URL iconUrl = new URL(e.getString("icon"));
+                Bitmap bmp = BitmapFactory.decodeStream(iconUrl.openConnection().getInputStream());
+                rows.add(new Event(id, longitude, latitude, bmp));
+            }
+            rd.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         } finally {
             if (conn != null) {
                 conn.disconnect();
@@ -77,8 +114,14 @@ public class EventFetcher extends AsyncTask<String, String, String> {
     }
 
     @Override
-    protected void onPostExecute(String file_url) {
-
+    protected void onPostExecute(String string) {
+        //parse JSON
+        for (Event event : rows) {
+            map.addMarker(new MarkerOptions()
+                    .position(new LatLng(event.latitude, event.longitude))
+                    .title("EVENT")
+                    .icon(BitmapDescriptorFactory.fromBitmap(event.icon)));
+        }
     }
 
     protected void onProgressUpdate(String... progress) {
