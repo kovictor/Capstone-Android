@@ -3,6 +3,8 @@ package com.capstonappdeveloper.capstone_android.Protocol.Video;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.capstonappdeveloper.capstone_android.StaticResources;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -21,8 +23,6 @@ import java.net.URL;
  */
 public class VideoUploader extends AsyncTask<String, String, String> {
     //this currently points to my test server, change accordingly
-    public static String SERVER_URI = "http://ec2-54-71-87-84.us-west-2.compute.amazonaws.com";
-    public static String UPLOAD_SCRIPT = "/src/php/uploadVideo.php";
     private static String TWO_HYPHENS = "--";
     private static String BOUNDARY = "*****";
     private static String LINE_END = "\r\n";
@@ -50,7 +50,7 @@ public class VideoUploader extends AsyncTask<String, String, String> {
 
     }
 
-    private static void uploadVideo(String sourceFileUri) {
+    private void uploadVideo(String sourceFileUri) {
         // String [] string = sourceFileUri;
         String fileName = sourceFileUri;
 
@@ -73,7 +73,9 @@ public class VideoUploader extends AsyncTask<String, String, String> {
             Log.d("Huzza", "Initial capstone .available : " + bytesAvailable);
 
             bufferSize = Math.min(bytesAvailable, MAX_BUFFER_SIZE);
-            URL url = new URL(SERVER_URI + UPLOAD_SCRIPT);
+            URL url = new URL(StaticResources.HTTP_PREFIX +
+                              StaticResources.JamesServer +
+                              StaticResources.VIDEO_UPLOAD_SCRIPT);
             conn = (HttpURLConnection) url.openConnection(); // Open a HTTP  connection to  the URL
             conn.setDoInput(true); // Allow Inputs
             conn.setDoOutput(true); // Allow Outputs

@@ -3,11 +3,9 @@ package com.capstonappdeveloper.capstone_android;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.View;
 
-import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoFileNavigator;
-import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoUploader;
+import com.capstonappdeveloper.capstone_android.Protocol.Video.EventFetcher;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -21,6 +19,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
  */
 public class MainActivity extends FragmentActivity
     implements OnMapReadyCallback{
+    SupportMapFragment mapFragment;
+    WebFragment webFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +37,9 @@ public class MainActivity extends FragmentActivity
     }
 
     public void switchToMap() {
-        SupportMapFragment mapFragment = new SupportMapFragment();
+        mapFragment = new SupportMapFragment();
         mapFragment.getMapAsync(this);
+
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container, mapFragment)
@@ -47,7 +48,7 @@ public class MainActivity extends FragmentActivity
 
     public void switchToWebView(View v) {
         //switch to webview for viewing 3D model
-        WebFragment webFragment = new WebFragment();
+        webFragment = new WebFragment();
         webFragment.init("http://ec2-54-71-87-84.us-west-2.compute.amazonaws.com/");
         getSupportFragmentManager()
                 .beginTransaction()
@@ -69,8 +70,8 @@ public class MainActivity extends FragmentActivity
     }
 
     public void testVideoUpload(View v) {
-        Log.d("TESTING VIDEO UPLOAD", "TESTING THIS SHIT MOTHERFUCKA");
         //VideoFileNavigator.getVideoFromInternalStorage(this, "");
-        new VideoUploader().execute(VideoFileNavigator.getVideoFromInternalStorage(this, ""));
+        //new VideoUploader().execute(VideoFileNavigator.getVideoFromInternalStorage(this, ""));
+        new EventFetcher(new LatLng(43.6532, -79.3832)).execute();
     }
 }
