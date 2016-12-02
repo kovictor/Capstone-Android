@@ -1,4 +1,4 @@
-package com.capstonappdeveloper.capstone_android.Protocol.Video;
+package com.capstonappdeveloper.capstone_android.Protocol.Map;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,37 +14,25 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by james on 2016-11-28.
  */
 public class EventFetcher extends AsyncTask<String, String, String> {
 
-    private class Event {
-        int id;
-        double longitude;
-        double latitude;
-        Bitmap icon;
-        public Event(int id, double longitude, double latitude, Bitmap icon) {
-            this.id = id;
-            this.longitude = longitude;
-            this.latitude = latitude;
-            this.icon = icon;
-        }
-    }
-
-    private ArrayList<Event> rows;
+    private HashMap<String, Event> events;
     private LatLng location;
     private GoogleMap map;
 
-    public EventFetcher(GoogleMap map, LatLng currentLocation) {
+    public EventFetcher(GoogleMap map, LatLng currentLocation, HashMap<String, Event> events) {
         this.location = currentLocation;
         this.map = map;
+        this.events = events;
     }
 
     @Override
@@ -85,19 +73,25 @@ public class EventFetcher extends AsyncTask<String, String, String> {
             }
 
             //parse JSON
-            rows = new ArrayList<Event>();
             JSONArray array = new JSONArray(response);
             for(int i=0;i<array.length();i++) {
                 JSONObject e = array.getJSONObject(i);
 
-                int id = e.getInt("id");
+                String id = e.getString("id");
                 double longitude = e.getDouble("longitude");
                 double latitude = e.getDouble("latitude");
                 URL iconUrl = new URL(e.getString("icon"));
+                String eventName = e.getString("event");
 
-                Bitmap bmp = BitmapFactory.decodeStream(iconUrl.openConnection().getInputStream());
+                Bitmap bmp =
+                        Bitmap.createScaledBitmap(
+                            BitmapFactory.decodeStream(iconUrl.openConnection().getInputStream()),
+                            50,
+                            50,
+                            false
+                    );
 
-                rows.add(new Event(id, longitude, latitude, bmp));
+                events.put(id, new Event(id, new LatLng(latitude, longitude), bmp, eventName));
             }
             rd.close();
         } catch (Exception ex) {
@@ -112,11 +106,14 @@ public class EventFetcher extends AsyncTask<String, String, String> {
     @Override
     protected void onPostExecute(String string) {
         //grab the events and pin them on the map
-        for (Event event : rows) {
+        for (Map.Entry<String, Event> event : events.entrySet()) {
+            String key = event.getKey();
+            Event value = event.getValue();
             map.addMarker(new MarkerOptions()
-                    .position(new LatLng(event.latitude, event.longitude))
-                    .title("EVENT")
-                    .icon(BitmapDescriptorFactory.fromBitmap(event.icon)));
+                    .position(value.coordinates)
+                    .title(value.eventName)
+                    .icon(BitmapDescriptorFactory.fromBitmap(value.icon)))
+                    .setSnippet(value.id);
         }
     }
 

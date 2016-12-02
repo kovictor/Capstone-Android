@@ -13,7 +13,8 @@
         android:layout_width="@dimen/tool_bar_icon_size"
         android:layout_height="match_parent"
         android:clickable="true"
-        android:src="@drawable/menu"/>
+        android:src="@drawable/menu"
+        android:onClick="testVideoUpload"/>
 
     <View
         android:layout_width="0dp"
@@ -27,7 +28,7 @@
         android:layout_height="match_parent"
         android:clickable="true"
         android:src="@android:drawable/ic_menu_camera"
-        android:onClick="onCameraButtonClick"/>
+        />
 
     <View
         android:layout_width="0dp"
