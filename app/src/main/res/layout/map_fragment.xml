@@ -14,28 +14,24 @@
     <LinearLayout
         android:id="@+id/event_banner"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="50dp"
         android:orientation="horizontal"
         android:gravity="center"
         android:visibility="gone"
-        android:background="#EEEEEE">
+        android:background="@android:color/white">
 
         <ImageView
             android:id="@+id/event_icon"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            />
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_width="@dimen/tool_bar_height"
+            android:layout_height="@dimen/tool_bar_height"
+            android:paddingLeft="10dp"
             />
 
         <TextView
             android:id="@+id/event_title"
             android:layout_width="wrap_content"
             android:layout_height="15dp"
+            android:paddingLeft="10dp"
             />
 
         <View
@@ -46,9 +42,10 @@
 
         <ImageView
             android:id="@+id/camera_button"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:src="@android:drawable/ic_menu_camera"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:paddingRight="15dp"
+            android:src="@drawable/arrow"
             android:onClick="onCameraButtonClick"
             />
     </LinearLayout>

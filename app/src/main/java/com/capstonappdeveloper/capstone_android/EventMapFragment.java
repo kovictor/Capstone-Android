@@ -12,9 +12,7 @@ import android.widget.TextView;
 
 import com.capstonappdeveloper.capstone_android.Protocol.Map.Event;
 import com.capstonappdeveloper.capstone_android.Protocol.Map.EventFetcher;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -27,7 +25,7 @@ import java.util.HashMap;
  * Created by james on 2016-12-01.
  */
 public class EventMapFragment extends Fragment
-        implements OnMapReadyCallback, OnMarkerClickListener, OnCameraIdleListener {
+        implements OnMapReadyCallback, OnMarkerClickListener {
 
     private HashMap<String, Event> events;
     private LatLng homeLocation;
@@ -38,9 +36,6 @@ public class EventMapFragment extends Fragment
     LinearLayout overheadBanner;
     ImageView overheadIcon;
     TextView overheadTitle;
-
-    float zoom = 12;
-    double overheadCancelThreshold = 0.025;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -53,6 +48,7 @@ public class EventMapFragment extends Fragment
         overheadTitle = (TextView) view.findViewById(R.id.event_title);
         homeLocation = new LatLng(43.6532, -79.3832);
         events = new HashMap<String, Event>();
+        currentPin = null;
 
         return view;
     }
@@ -78,8 +74,7 @@ public class EventMapFragment extends Fragment
     public void onMapReady(GoogleMap map) {
         this.googleMap = map;
         googleMap.setOnMarkerClickListener(this);
-        googleMap.setOnCameraIdleListener(this);
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(homeLocation, zoom));
+        //googleMap.setOnCameraIdleListener(this);
         new EventFetcher(map, homeLocation, events).execute();
 
     }
@@ -92,24 +87,15 @@ public class EventMapFragment extends Fragment
     }
 
     @Override
-    public void onCameraIdle() {
-        if (currentPin == null) return;
-
-        if (distance(googleMap.getCameraPosition().target, currentPin) > overheadCancelThreshold) {
-            overheadBanner.setVisibility(View.GONE);
-            currentPin = null;
-        }
-    }
-
-    @Override
     public boolean onMarkerClick(final Marker marker) {
         Event event = events.get(marker.getSnippet());
 
-        overheadBanner.setVisibility(View.VISIBLE);
         overheadIcon.setImageBitmap(event.icon);
         overheadTitle.setText(event.eventName);
+        if (currentPin == null) {
+            overheadBanner.setVisibility(View.VISIBLE);
+        }
         currentPin = event.coordinates;
-
         return true;
     }
 }

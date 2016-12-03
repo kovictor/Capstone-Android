@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 
 import com.capstonappdeveloper.capstone_android.StaticResources;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -55,6 +56,14 @@ public class EventFetcher extends AsyncTask<String, String, String> {
                 "&latitude=" + currentLocation.latitude;
     }
 
+    private Bitmap scaleBitmap(Bitmap bmp, int dim) {
+        int width = bmp.getWidth();
+        int height = bmp.getHeight();
+        width = (width > height) ? dim : (int) (((double) width)/height * dim);
+        height = (height > width) ? dim : (int) (((double) height)/width * dim);
+        return Bitmap.createScaledBitmap(bmp, width, height, false);
+    }
+
     private void fetchEvents(LatLng currentLocation) {
         HttpURLConnection conn = null;
         try {
@@ -83,13 +92,10 @@ public class EventFetcher extends AsyncTask<String, String, String> {
                 URL iconUrl = new URL(e.getString("icon"));
                 String eventName = e.getString("event");
 
-                Bitmap bmp =
-                        Bitmap.createScaledBitmap(
-                            BitmapFactory.decodeStream(iconUrl.openConnection().getInputStream()),
-                            50,
-                            50,
-                            false
-                    );
+                Bitmap bmp = scaleBitmap(
+                        BitmapFactory.decodeStream(iconUrl.openConnection().getInputStream()),
+                        StaticResources.mapThumbnailSize
+                );
 
                 events.put(id, new Event(id, new LatLng(latitude, longitude), bmp, eventName));
             }
@@ -115,6 +121,12 @@ public class EventFetcher extends AsyncTask<String, String, String> {
                     .icon(BitmapDescriptorFactory.fromBitmap(value.icon)))
                     .setSnippet(value.id);
         }
+        map.animateCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                        events.get("0").coordinates,
+                        StaticResources.mapZoom
+                )
+        );
     }
 
     protected void onProgressUpdate(String... progress) {
