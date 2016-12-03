@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 
+import com.capstonappdeveloper.capstone_android.EventMapFragment;
 import com.capstonappdeveloper.capstone_android.StaticResources;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -29,11 +30,13 @@ public class EventFetcher extends AsyncTask<String, String, String> {
     private HashMap<String, Event> events;
     private LatLng location;
     private GoogleMap map;
+    EventMapFragment mapFragment;
 
-    public EventFetcher(GoogleMap map, LatLng currentLocation, HashMap<String, Event> events) {
-        this.location = currentLocation;
-        this.map = map;
-        this.events = events;
+    public EventFetcher(EventMapFragment mapFragment) {
+        this.location = mapFragment.getHomeLocation();
+        this.map = mapFragment.getMap();
+        this.events = mapFragment.getEvents();
+        this.mapFragment = mapFragment;
     }
 
     @Override
@@ -121,12 +124,17 @@ public class EventFetcher extends AsyncTask<String, String, String> {
                     .icon(BitmapDescriptorFactory.fromBitmap(value.icon)))
                     .setSnippet(value.id);
         }
+
+        //for now let's just zoom in on and focus on the event with id "0"
+        Event eventOfInterest = events.get("0");
+
         map.animateCamera(
                 CameraUpdateFactory.newLatLngZoom(
-                        events.get("0").coordinates,
+                        eventOfInterest.coordinates,
                         StaticResources.mapZoom
                 )
         );
+        mapFragment.setOverhead(eventOfInterest);
     }
 
     protected void onProgressUpdate(String... progress) {

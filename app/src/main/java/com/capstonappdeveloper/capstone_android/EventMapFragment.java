@@ -46,6 +46,7 @@ public class EventMapFragment extends Fragment
         overheadBanner = (LinearLayout) view.findViewById(R.id.event_banner);
         overheadIcon = (ImageView) view.findViewById(R.id.event_icon);
         overheadTitle = (TextView) view.findViewById(R.id.event_title);
+        //Todo: Get the actual gps location of the user
         homeLocation = new LatLng(43.6532, -79.3832);
         events = new HashMap<String, Event>();
         currentPin = null;
@@ -75,7 +76,7 @@ public class EventMapFragment extends Fragment
         this.googleMap = map;
         googleMap.setOnMarkerClickListener(this);
         //googleMap.setOnCameraIdleListener(this);
-        new EventFetcher(map, homeLocation, events).execute();
+        new EventFetcher(this).execute();
 
     }
 
@@ -86,16 +87,32 @@ public class EventMapFragment extends Fragment
         );
     }
 
-    @Override
-    public boolean onMarkerClick(final Marker marker) {
-        Event event = events.get(marker.getSnippet());
-
+    public void setOverhead(Event event) {
         overheadIcon.setImageBitmap(event.icon);
         overheadTitle.setText(event.eventName);
-        if (currentPin == null) {
-            overheadBanner.setVisibility(View.VISIBLE);
-        }
         currentPin = event.coordinates;
+    }
+
+    @Override
+    public boolean onMarkerClick(final Marker marker) {
+        setOverhead(events.get(marker.getSnippet()));
         return true;
+    }
+
+    //some getters
+    public HashMap<String, Event> getEvents() {
+        return events;
+    }
+
+    public GoogleMap getMap() {
+        return googleMap;
+    }
+
+    public LinearLayout getOverheadBanner() {
+        return overheadBanner;
+    }
+
+    public LatLng getHomeLocation() {
+        return homeLocation;
     }
 }

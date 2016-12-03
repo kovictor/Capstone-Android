@@ -6,9 +6,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 
-import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoFileNavigator;
-import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoUploader;
-
 /**
  * For now, we're just swapping fragments into the framelayout "fragment_container"
  * but eventually we'll probably want to move to something like a viewPager
@@ -24,9 +21,16 @@ public class MainActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         menuSelector = findViewById(R.id.menu_selector);
         mapSelector = findViewById(R.id.map_selector);
         videoSelector = findViewById(R.id.video_selector);
+
+        mapFragment = new EventMapFragment();
+        webFragment = new WebFragment();
+
+        webFragment.init(StaticResources.HTTP_PREFIX + StaticResources.JamesServer);
+
         switchToMap(null);
     }
 
@@ -37,9 +41,8 @@ public class MainActivity extends FragmentActivity {
     }
 
     public void switchToMap(View v) {
-        if (mapFragment == null) {
-            mapFragment = new EventMapFragment();
-        }
+        hideSelectors();
+        mapSelector.setVisibility(View.VISIBLE);
 
         if (currentFragment == mapFragment) return;
         currentFragment = mapFragment;
@@ -48,17 +51,11 @@ public class MainActivity extends FragmentActivity {
                 .beginTransaction()
                 .replace(R.id.fragment_container, mapFragment)
                 .commit();
-
-        hideSelectors();
-        mapSelector.setVisibility(View.VISIBLE);
     }
 
     public void switchToWebView(View v) {
-        //switch to webview for viewing 3D model
-        if (webFragment == null) {
-            webFragment = new WebFragment();
-            webFragment.init(StaticResources.HTTP_PREFIX + StaticResources.JamesServer);
-        }
+        hideSelectors();
+        videoSelector.setVisibility(View.VISIBLE);
 
         if (currentFragment == webFragment) return;
         currentFragment = webFragment;
@@ -67,9 +64,6 @@ public class MainActivity extends FragmentActivity {
                 .beginTransaction()
                 .replace(R.id.fragment_container, webFragment)
                 .commit();
-
-        hideSelectors();
-        videoSelector.setVisibility(View.VISIBLE);
     }
 
     public void onMenuButtonClick(View v) {
@@ -83,7 +77,7 @@ public class MainActivity extends FragmentActivity {
         hideSelectors();
         menuSelector.setVisibility(View.VISIBLE);
         //VideoFileNavigator.getVideoFromInternalStorage(this, "");
-        new VideoUploader().execute(VideoFileNavigator.getVideoFromInternalStorage(this, ""));
+        //new VideoUploader().execute(VideoFileNavigator.getVideoFromInternalStorage(this, ""));
     }
 
     public void onCameraButtonClick(View v) {
