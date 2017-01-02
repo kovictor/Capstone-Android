@@ -68,8 +68,9 @@ public class MainActivity extends FragmentActivity
 
     public void onCameraButtonClick(View v) {
         System.out.println("In onCameraButtonClick");
-        Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-        startActivity(intent);
+        //Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            Intent intent = new Intent(this, CameraActivity.class);
+            startActivity(intent);
     }
 
     public void onMenuButtonClick(View v) {
