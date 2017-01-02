@@ -16,4 +16,9 @@ public class StaticResources {
     //scripts
     public static String VIDEO_UPLOAD_SCRIPT = "/src/php/uploadVideo.php";
     public static String GET_LOCAL_EVENTS_SCRIPT = "/src/php/db/get_events.php";
+
+    //icon sizes
+    public static int mapThumbnailSize = 250;
+
+    public static int mapZoom = 14;
 }

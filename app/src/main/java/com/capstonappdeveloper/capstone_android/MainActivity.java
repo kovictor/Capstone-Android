@@ -2,51 +2,50 @@ package com.capstonappdeveloper.capstone_android;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
-
-import com.capstonappdeveloper.capstone_android.Protocol.Video.EventFetcher;
-import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoFileNavigator;
-import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoUploader;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
 
 /**
  * For now, we're just swapping fragments into the framelayout "fragment_container"
  * but eventually we'll probably want to move to something like a viewPager
  * so that we can switch fragments while maintaining fragment state
  */
-public class MainActivity extends FragmentActivity
-    implements OnMapReadyCallback{
-    SupportMapFragment mapFragment;
-    LatLng homeLocation;
-    GoogleMap map;
+public class MainActivity extends FragmentActivity {
+    EventMapFragment mapFragment;
     WebFragment webFragment;
+    Fragment currentFragment;
+    View menuSelector, mapSelector, videoSelector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        homeLocation = new LatLng(43.6532, -79.3832);
-        switchToMap();
+
+        menuSelector = findViewById(R.id.menu_selector);
+        mapSelector = findViewById(R.id.map_selector);
+        videoSelector = findViewById(R.id.video_selector);
+
+        mapFragment = new EventMapFragment();
+        webFragment = new WebFragment();
+
+        webFragment.init(StaticResources.HTTP_PREFIX + StaticResources.JamesServer);
+
+        switchToMap(null);
     }
 
-    @Override
-    public void onMapReady(GoogleMap map) {
-        this.map = map;
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(homeLocation, 10.0f));
-        new EventFetcher(map, homeLocation).execute();
-
+    public void hideSelectors() {
+        menuSelector.setVisibility(View.GONE);
+        mapSelector.setVisibility(View.GONE);
+        videoSelector.setVisibility(View.GONE);
     }
 
-    public void switchToMap() {
-        if (mapFragment == null) {
-            mapFragment = new SupportMapFragment();
-            mapFragment.getMapAsync(this);
-        }
+    public void switchToMap(View v) {
+        hideSelectors();
+        mapSelector.setVisibility(View.VISIBLE);
+
+        if (currentFragment == mapFragment) return;
+        currentFragment = mapFragment;
 
         getSupportFragmentManager()
                 .beginTransaction()
@@ -55,11 +54,12 @@ public class MainActivity extends FragmentActivity
     }
 
     public void switchToWebView(View v) {
-        //switch to webview for viewing 3D model
-        if (webFragment == null) {
-            webFragment = new WebFragment();
-            webFragment.init("http://ec2-54-71-87-84.us-west-2.compute.amazonaws.com/");
-        }
+        hideSelectors();
+        videoSelector.setVisibility(View.VISIBLE);
+
+        if (currentFragment == webFragment) return;
+        currentFragment = webFragment;
+
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container, webFragment)
@@ -81,6 +81,8 @@ public class MainActivity extends FragmentActivity
     }
 
     public void testVideoUpload(View v) {
+        hideSelectors();
+        menuSelector.setVisibility(View.VISIBLE);
         //VideoFileNavigator.getVideoFromInternalStorage(this, "");
         new VideoUploader().execute(VideoFileNavigator.getVideoFromInternalStorage(this, ""));
     }
