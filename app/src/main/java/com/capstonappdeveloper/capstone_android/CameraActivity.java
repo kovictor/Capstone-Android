@@ -173,12 +173,21 @@ public class CameraActivity extends Activity {
           mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
         }
     }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        System.out.println("----------------Destroying Camera Resources--------------");
+        closeCamera();
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camara_intent);
 
-        createImageGallery();
+        //createImageGallery();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.galleryRecyclerView);
         GridLayoutManager layoutManager = new GridLayoutManager(this, 1);
@@ -296,14 +305,13 @@ public class CameraActivity extends Activity {
     private void openCamera() {
         CameraManager cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
-           //TODO Add permissions check and request cause 6.0 android hates us..doesnt bug out now
             Log.v("Camera", mCameraId + " " + mCameraDeviceStateCallback);
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
                 if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
                     cameraManager.openCamera(mCameraId, mCameraDeviceStateCallback, null);
                 } else {
                     if(shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)){
-                        Toast.makeText(this, "No Permission to use the Camera Service", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "No Permission to use the Camera Service", Toast.LENGTH_LONG).show();
                     }
                     requestPermissions(new String[] {Manifest.permission.CAMERA}, 1);
                 }
@@ -352,6 +360,17 @@ public class CameraActivity extends Activity {
                     }, null);
         } catch(CameraAccessException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void closeCamera(){
+        if(mCameraCaptureSession!=null){
+            mCameraCaptureSession.close();
+            mCameraCaptureSession=null;
+        }
+        if (mCameraDevice!=null){
+            mCameraDevice.close();
+            mCameraDevice=null;
         }
     }
 }
