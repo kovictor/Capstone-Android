@@ -1,5 +1,9 @@
 package com.capstonappdeveloper.capstone_android;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+
 /**
  * Created by james on 2016-11-28.
  */
@@ -21,4 +25,11 @@ public class StaticResources {
     public static int mapThumbnailSize = 250;
 
     public static int mapZoom = 14;
+
+    public static boolean isNetworkAvailable(Context c) {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
 }

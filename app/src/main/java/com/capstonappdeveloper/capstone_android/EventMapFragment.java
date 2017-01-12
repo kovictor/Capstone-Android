@@ -75,8 +75,10 @@ public class EventMapFragment extends Fragment
     public void onMapReady(GoogleMap map) {
         this.googleMap = map;
         googleMap.setOnMarkerClickListener(this);
-        //googleMap.setOnCameraIdleListener(this);
-        new EventFetcher(this).execute();
+
+        if (StaticResources.isNetworkAvailable(getActivity())) {
+            new EventFetcher(this).execute();
+        }
 
     }
 

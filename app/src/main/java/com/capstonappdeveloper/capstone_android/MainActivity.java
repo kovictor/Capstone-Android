@@ -86,7 +86,8 @@ public class MainActivity extends FragmentActivity {
     public void testVideoUpload(View v) {
         hideSelectors();
         menuSelector.setVisibility(View.VISIBLE);
-        //VideoFileNavigator.getVideoFromInternalStorage(this, "");
-        new VideoUploader().execute(VideoFileNavigator.getVideoFromInternalStorage(this, ""));
+        if (StaticResources.isNetworkAvailable(this)) {
+            new VideoUploader().execute(VideoFileNavigator.getVideoFromInternalStorage(this, ""));
+        }
     }
 }
