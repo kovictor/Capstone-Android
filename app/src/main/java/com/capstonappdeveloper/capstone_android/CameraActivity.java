@@ -487,6 +487,7 @@ public class CameraActivity extends Activity {
 
     private void captureStillImage() {
         try {
+            CameraDevice.
             CaptureRequest.Builder captureStillBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureStillBuilder.addTarget(mImageReader.getSurface());
 
