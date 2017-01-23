@@ -37,10 +37,10 @@ import android.view.MenuItem;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -70,13 +70,14 @@ public class CameraActivity extends Activity {
 
     public static final int IMAGE_FORMAT = ImageFormat.JPEG;
     private static final int ACTIVITY_START_CAMERA_APP = 0;
-    private static final int STATE_PREVIEW = 0;
-    private static final int STATE_WAIT_LOCK = 1;
-    private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 1;
-    private static final int REQUEST_CAMERA_RESULT = 2;
+    private static enum CAPTURE_STATE {
+        PREVIEW,
+        WAIT_LOCK,
+        CAPTURE
+    }
+
     private int mPictureCount;
-    private int mState;
-    private ImageView mPhotoCapturedImageView;
+    private CAPTURE_STATE mState;
     private static String mImageFileLocation = "";
     private String GALLERY_LOCATION = "image_gallery";
     private static File mGalleryFolder;
@@ -92,8 +93,8 @@ public class CameraActivity extends Activity {
     private CameraDevice mCameraDevice;
     private HandlerThread mBackgroundThread;
     private Handler mBackgroundHandler;
-    private static File mImageFile;
     private ImageReader mImageReader;
+    private Surface mPreviewSurface;
     private final ImageReader.OnImageAvailableListener mOnImageAvailableListener =
             new ImageReader.OnImageAvailableListener() {
                 @Override
@@ -118,26 +119,85 @@ public class CameraActivity extends Activity {
         }
         @Override
         public void run() {
-            ByteBuffer byteBuffer = mImage.getPlanes()[0].getBuffer();
-            byte [] bytes = new byte[byteBuffer.remaining()];
-            byteBuffer.get(bytes);
-
-            FileOutputStream fileOutputStream = null;
+            byte[] bytes;
+            File file = null;
             try {
-                File imageFile = createImageFile(mImageHash, mSequenceNum);
-                fileOutputStream = new FileOutputStream(imageFile);
-                fileOutputStream.write(bytes);
-            } catch(IOException e){
-                e.printStackTrace();
-            } finally {
-                mImage.close();
-                if(fileOutputStream!=null){
+                file = createImageFile(mImageHash, mSequenceNum);
+            } catch (IOException e) {
+                return;
+            }
+            switch (mImage.getFormat()){
+                // YUV_420_888 images are saved in a format of our own devising. First write out the
+                // information necessary to reconstruct the image, all as ints: width, height, U-,V-plane
+                // pixel strides, and U-,V-plane row strides. (Y-plane will have pixel-stride 1 always.)
+                // Then directly place the three planes of byte data, uncompressed.
+                //
+                // Note the YUV_420_888 format does not guarantee the last pixel makes it in these planes,
+                // so some cases are necessary at the decoding end, based on the number of bytes present.
+                // An alternative would be to also encode, prior to each plane of bytes, how many bytes are
+                // in the following plane. Perhaps in the future.
+                case ImageFormat.YUV_420_888:
+                    FileOutputStream output = null;
+                    ByteBuffer buffer;
+
+                    boolean success = false;
+                    // "prebuffer" simply contains the meta information about the following planes.
+                    ByteBuffer prebuffer = ByteBuffer.allocate(16);
+                    System.out.println("WIDTH:" + mImage.getWidth() + " HEIGHT:"+mImage.getHeight());
+                    prebuffer.putInt(mImage.getWidth())
+                            .putInt(mImage.getHeight())
+                            .putInt(mImage.getPlanes()[1].getPixelStride())
+                            .putInt(mImage.getPlanes()[1].getRowStride());
+
                     try {
-                        fileOutputStream.close();
-                    }catch(IOException e){
+                        output = new FileOutputStream(file);
+                        output.write(prebuffer.array()); // write meta information to file
+                        // Now write the actual planes.
+                        for (int i = 0; i<3; i++){
+                            buffer = mImage.getPlanes()[i].getBuffer();
+                            bytes = new byte[buffer.remaining()]; // makes byte array large enough to hold image
+                            buffer.get(bytes); // copies image from buffer to byte array
+                            output.write(bytes);    // write the byte array to file
+                        }
+                        success = true;
+                    } catch (FileNotFoundException e) {
                         e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } finally {
+                        mImage.close(); // close this to free up buffer for other images
+                        if (null != output) {
+                            try {
+                                output.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
-                }
+                    break;
+
+                case ImageFormat.JPEG:
+                    ByteBuffer byteBuffer = mImage.getPlanes()[0].getBuffer();
+                    bytes = new byte[byteBuffer.remaining()];
+                    byteBuffer.get(bytes);
+
+                    FileOutputStream fileOutputStream = null;
+                    try {
+                        fileOutputStream = new FileOutputStream(file);
+                        fileOutputStream.write(bytes);
+                    } catch(IOException e){
+                        e.printStackTrace();
+                    } finally {
+                        mImage.close();
+                        if(fileOutputStream!=null){
+                            try {
+                                fileOutputStream.close();
+                            }catch(IOException e){
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    break;
             }
         }
     };
@@ -189,12 +249,14 @@ public class CameraActivity extends Activity {
 
         private void process(CaptureResult result){
             switch (mState) {
-                case STATE_PREVIEW:
+                case PREVIEW:
                     //do nothing, no act
                     break;
-                case STATE_WAIT_LOCK:
+                case WAIT_LOCK:
                     unLockFocus();
                     captureStillImage();
+                    break;
+                case CAPTURE:
                     break;
             }
         }
@@ -226,7 +288,7 @@ public class CameraActivity extends Activity {
                 }
                 StreamConfigurationMap map = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
-                Size largestImageSize = Collections.max(
+                Size imageSize = Collections.min(
                         Arrays.asList(map.getOutputSizes(IMAGE_FORMAT)),
                         new Comparator<Size>() {
                             @Override
@@ -235,8 +297,8 @@ public class CameraActivity extends Activity {
                             }
                         }
                 );
-                mImageReader = ImageReader.newInstance(largestImageSize.getWidth(),
-                        largestImageSize.getHeight(),
+                mImageReader = ImageReader.newInstance(imageSize.getWidth(),
+                        imageSize.getHeight(),
                         IMAGE_FORMAT,
                         1);
                 mImageReader.setOnImageAvailableListener(mOnImageAvailableListener,
@@ -281,6 +343,7 @@ public class CameraActivity extends Activity {
         setContentView(R.layout.activity_camara_intent);
 
         createImageGallery();
+        unLockFocus();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.galleryRecyclerView);
         GridLayoutManager layoutManager = new GridLayoutManager(this, 1);
@@ -361,7 +424,7 @@ public class CameraActivity extends Activity {
     private String generateImageHash() {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "IMAGE_" + timeStamp + "_";
-        return Integer.toString(imageFileName.hashCode());
+        return Integer.toString(Math.abs(imageFileName.hashCode()));
     }
 
     static File createImageFile(String imageHash, int sequenceNum) throws IOException {
@@ -397,14 +460,14 @@ public class CameraActivity extends Activity {
         try {
             SurfaceTexture surfaceTexture = mTextureView.getSurfaceTexture();
             surfaceTexture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
-            Surface previewSurface = new Surface(surfaceTexture);
+            mPreviewSurface = new Surface(surfaceTexture);
 
             //capture request
             mPreviewCaptureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            mPreviewCaptureRequestBuilder.addTarget(previewSurface);
+            mPreviewCaptureRequestBuilder.addTarget(mPreviewSurface);
 
             //creating session
-            mCameraDevice.createCaptureSession(Arrays.asList(previewSurface, mImageReader.getSurface()),
+            mCameraDevice.createCaptureSession(Arrays.asList(mPreviewSurface, mImageReader.getSurface()),
                     new CameraCaptureSession.StateCallback() {
                         @Override
                         public void onConfigured(CameraCaptureSession session) {
@@ -466,13 +529,17 @@ public class CameraActivity extends Activity {
         }
     }
 
-    private void lockFocus(){
-        mState = STATE_WAIT_LOCK;
+    private void lockFocus() {
+        mState = CAPTURE_STATE.WAIT_LOCK;
         mPictureCount = 0;
     }
 
-    private void unLockFocus(){
-        mState = STATE_PREVIEW;
+    private void unLockFocus() {
+        mState = CAPTURE_STATE.PREVIEW;
+    }
+
+    private void setCaptureState() {
+        mState = CAPTURE_STATE.CAPTURE;
     }
 
     public static Bitmap getBitmapFromMemoryCache(String key) {
@@ -485,12 +552,35 @@ public class CameraActivity extends Activity {
         }
     }
 
-    private void captureStillImage() {
+    public CaptureRequest.Builder getFastRequestBuilder() {
         try {
-            CameraDevice.
             CaptureRequest.Builder captureStillBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureStillBuilder.addTarget(mImageReader.getSurface());
+            captureStillBuilder.set(CaptureRequest.EDGE_MODE,
+                    CaptureRequest.EDGE_MODE_OFF);
+            captureStillBuilder.set(
+                    CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE,
+                    CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_ON);
+            captureStillBuilder.set(
+                    CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE,
+                    CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE_OFF);
+            captureStillBuilder.set(CaptureRequest.NOISE_REDUCTION_MODE,
+                    CaptureRequest.NOISE_REDUCTION_MODE_OFF);
+            captureStillBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
+                    CaptureRequest.CONTROL_AF_TRIGGER_CANCEL);
 
+            captureStillBuilder.set(CaptureRequest.CONTROL_AE_LOCK, true);
+            captureStillBuilder.set(CaptureRequest.CONTROL_AWB_LOCK, true);
+            return captureStillBuilder;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void captureStillImage() {
+        try {
+            CaptureRequest.Builder captureStillBuilder = getFastRequestBuilder();
+            captureStillBuilder.addTarget(mPreviewSurface);
             CameraCaptureSession.CaptureCallback captureCallback =
                     new CameraCaptureSession.CaptureCallback() {
                         @Override
