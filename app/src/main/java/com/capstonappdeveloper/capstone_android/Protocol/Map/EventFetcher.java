@@ -3,6 +3,7 @@ package com.capstonappdeveloper.capstone_android.Protocol.Map;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.capstonappdeveloper.capstone_android.EventMapFragment;
 import com.capstonappdeveloper.capstone_android.StaticResources;
@@ -20,7 +21,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by james on 2016-11-28.
@@ -30,6 +30,7 @@ public class EventFetcher extends AsyncTask<String, String, String> {
     private HashMap<String, Event> events;
     private LatLng location;
     private GoogleMap map;
+    private static final double range = 10.0;
     EventMapFragment mapFragment;
 
     public EventFetcher(EventMapFragment mapFragment) {
@@ -53,10 +54,11 @@ public class EventFetcher extends AsyncTask<String, String, String> {
 
     String formURL(LatLng currentLocation) {
         return StaticResources.HTTP_PREFIX +
-                StaticResources.JamesServer +
+                StaticResources.ProdServer +
                 StaticResources.GET_LOCAL_EVENTS_SCRIPT +
                 "?longitude=" + currentLocation.longitude +
-                "&latitude=" + currentLocation.latitude;
+                "&latitude=" + currentLocation.latitude +
+                "&range=" + this.range;
     }
 
     private Bitmap scaleBitmap(Bitmap bmp, int dim) {
@@ -92,14 +94,15 @@ public class EventFetcher extends AsyncTask<String, String, String> {
                 String id = e.getString("id");
                 double longitude = e.getDouble("longitude");
                 double latitude = e.getDouble("latitude");
-                URL iconUrl = new URL(e.getString("icon"));
-                String eventName = e.getString("event");
+                URL iconUrl = new URL(e.getString("thumbnail"));
+                String eventName = e.getString("name");
 
                 Bitmap bmp = scaleBitmap(
                         BitmapFactory.decodeStream(iconUrl.openConnection().getInputStream()),
                         StaticResources.mapThumbnailSize
                 );
 
+                Log.d("FOUND EVENT", id + ":" + eventName);
                 events.put(id, new Event(id, new LatLng(latitude, longitude), bmp, eventName));
             }
             rd.close();
@@ -114,19 +117,21 @@ public class EventFetcher extends AsyncTask<String, String, String> {
 
     @Override
     protected void onPostExecute(String string) {
-        //grab the events and pin them on the map
-        for (Map.Entry<String, Event> event : events.entrySet()) {
-            String key = event.getKey();
-            Event value = event.getValue();
-            map.addMarker(new MarkerOptions()
-                    .position(value.coordinates)
-                    .title(value.eventName)
-                    .icon(BitmapDescriptorFactory.fromBitmap(value.icon)))
-                    .setSnippet(value.id);
+        if (events.isEmpty()) {
+            return;
         }
 
-        //for now let's just zoom in on and focus on the event with id "0"
-        Event eventOfInterest = events.get("0");
+        //grab the events and pin them on the map
+        for (Event event : events.values()) {
+            map.addMarker(new MarkerOptions()
+                    .position(event.coordinates)
+                    .title(event.eventName)
+                    .icon(BitmapDescriptorFactory.fromBitmap(event.icon)))
+                    .setSnippet(event.id);
+        }
+
+        //for now let's just zoom in on and focus on the event with id "test"
+        Event eventOfInterest = events.get("test");
 
         map.animateCamera(
                 CameraUpdateFactory.newLatLngZoom(

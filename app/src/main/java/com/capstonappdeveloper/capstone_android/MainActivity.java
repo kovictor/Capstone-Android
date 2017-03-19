@@ -8,6 +8,7 @@ import android.view.View;
 
 import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoFileNavigator;
 import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoUploader;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 /**
  * For now, we're just swapping fragments into the framelayout "fragment_container"
@@ -32,7 +33,8 @@ public class MainActivity extends FragmentActivity {
         mapFragment = new EventMapFragment();
         webFragment = new WebFragment();
 
-        webFragment.init(StaticResources.HTTP_PREFIX + StaticResources.JamesServer);
+        webFragment.init(StaticResources.HTTP_PREFIX + StaticResources.ProdServer);
+        FirebaseMessaging.getInstance().subscribeToTopic("test");
 
         switchToMap(null);
     }

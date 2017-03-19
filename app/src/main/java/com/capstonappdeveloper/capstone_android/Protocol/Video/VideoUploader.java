@@ -72,7 +72,7 @@ public class VideoUploader extends AsyncTask<String, String, String> {
 
             bufferSize = Math.min(bytesAvailable, MAX_BUFFER_SIZE);
             URL url = new URL(StaticResources.HTTP_PREFIX +
-                              StaticResources.JamesServer +
+                              StaticResources.ProdServer +
                               StaticResources.VIDEO_UPLOAD_SCRIPT);
             conn = (HttpURLConnection) url.openConnection(); // Open a HTTP  connection to  the URL
             conn.setDoInput(true); // Allow Inputs

@@ -3,6 +3,7 @@ package com.capstonappdeveloper.capstone_android;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,7 +48,7 @@ public class EventMapFragment extends Fragment
         overheadIcon = (ImageView) view.findViewById(R.id.event_icon);
         overheadTitle = (TextView) view.findViewById(R.id.event_title);
         //Todo: Get the actual gps location of the user
-        homeLocation = new LatLng(43.6532, -79.3832);
+        homeLocation = new LatLng(-79, 79);
         events = new HashMap<String, Event>();
         currentPin = null;
 
@@ -77,9 +78,12 @@ public class EventMapFragment extends Fragment
         googleMap.setOnMarkerClickListener(this);
 
         if (StaticResources.isNetworkAvailable(getActivity())) {
+            Log.d("EVENT SYNC", "Starting event fetch from server");
             new EventFetcher(this).execute();
         }
-
+        else {
+            Log.d("Internet not connected", "Wifi connection unavailable");
+        }
     }
 
     protected double distance(LatLng a, LatLng b) {
