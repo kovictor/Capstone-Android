@@ -45,6 +45,21 @@
             android:label="@string/title_activity_playback"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
+        <activity
+            android:name=".CreateEventActivity"
+            android:label="@string/title_activity_create_event"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <service android:name=".Messaging.FirebaseSyncService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+        <service android:name=".Messaging.FirebaseIDService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
