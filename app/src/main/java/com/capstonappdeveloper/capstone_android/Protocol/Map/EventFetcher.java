@@ -12,6 +12,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -123,6 +124,7 @@ public class EventFetcher extends AsyncTask<String, String, String> {
 
         //grab the events and pin them on the map
         for (Event event : events.values()) {
+            FirebaseMessaging.getInstance().subscribeToTopic(event.id);
             map.addMarker(new MarkerOptions()
                     .position(event.coordinates)
                     .title(event.eventName)

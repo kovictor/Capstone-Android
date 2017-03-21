@@ -14,8 +14,10 @@ public class StaticResources {
     public static String ProdServer = "ec2-35-163-6-36.us-west-2.compute.amazonaws.com";
 
     //scripts
-    public static String VIDEO_UPLOAD_SCRIPT = "/src/php/uploadVideo.php";
+    public static String VIDEO_UPLOAD_SCRIPT = "/event/upload/";
     public static String GET_LOCAL_EVENTS_SCRIPT = "/events";
+    public static String SYNCHRONIZE_CAPTURE_SCRIPT = "/broadcast";
+    public static String BEGIN_IMAGE_CAPTURE = "begin_image_capture";
 
     //icon sizes
     public static int mapThumbnailSize = 250;

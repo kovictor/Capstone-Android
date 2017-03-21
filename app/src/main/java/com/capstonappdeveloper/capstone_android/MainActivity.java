@@ -8,7 +8,6 @@ import android.view.View;
 
 import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoFileNavigator;
 import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoUploader;
-import com.google.firebase.messaging.FirebaseMessaging;
 
 /**
  * For now, we're just swapping fragments into the framelayout "fragment_container"
@@ -34,8 +33,6 @@ public class MainActivity extends FragmentActivity {
         webFragment = new WebFragment();
 
         webFragment.init(StaticResources.HTTP_PREFIX + StaticResources.ProdServer);
-        FirebaseMessaging.getInstance().subscribeToTopic("test");
-
         switchToMap(null);
     }
 
@@ -75,6 +72,7 @@ public class MainActivity extends FragmentActivity {
         System.out.println("In onCameraButtonClick");
         //Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             Intent intent = new Intent(this, CameraActivity.class);
+            intent.putExtra(CameraActivity.CURRENT_EVENT, mapFragment.getCurrentEvent());
             startActivity(intent);
     }
 

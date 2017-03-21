@@ -17,7 +17,7 @@ android:paddingBottom="16dp" tools:context=".CameraActivity">
         android:layout_height="wrap_content"
         android:text="Take Photo"
         android:id="@+id/photoButton"
-        android:onClick="takePhoto"
+        android:onClick="sendTakePhotoBroadcast"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 

@@ -2,8 +2,10 @@ package com.capstonappdeveloper.capstone_android;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
@@ -30,6 +32,7 @@ import android.support.v4.util.LruCache;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Menu;
@@ -38,6 +41,8 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Toast;
+
+import com.capstonappdeveloper.capstone_android.Protocol.Map.SynchronizeCapture;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -68,6 +73,7 @@ public class CameraActivity extends Activity {
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
 
+    public static final String CURRENT_EVENT = "current_event";
     public static final int IMAGE_FORMAT = ImageFormat.JPEG;
     private static final int ACTIVITY_START_CAMERA_APP = 0;
     private static enum CAPTURE_STATE {
@@ -95,6 +101,7 @@ public class CameraActivity extends Activity {
     private Handler mBackgroundHandler;
     private ImageReader mImageReader;
     private Surface mPreviewSurface;
+    private ImageCaptureReceiver mBroadcastReceiver;
     private final ImageReader.OnImageAvailableListener mOnImageAvailableListener =
             new ImageReader.OnImageAvailableListener() {
                 @Override
@@ -105,6 +112,16 @@ public class CameraActivity extends Activity {
                     newHandler.post(new ImageSaver(reader.acquireNextImage(), mImageHash, mPictureCount));
                 }
             };
+
+    private class ImageCaptureReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(StaticResources.BEGIN_IMAGE_CAPTURE)) {
+                takePhoto(intent.getStringExtra(CURRENT_EVENT));
+                Log.d("BROADCAST RECEIVED", "STARTING THE SYNCHRONIZED IMAGE CAPTURE NOW");
+            }
+        }
+    }
 
     private static class ImageSaver implements Runnable {
 
@@ -404,10 +421,16 @@ public class CameraActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void takePhoto(View view) {
-        mImageHash = generateImageHash();
-        createImageGallery();
-        lockFocus();
+    public void sendTakePhotoBroadcast(View view) {
+        new SynchronizeCapture("test").execute();
+    }
+
+    public void takePhoto(String event) {
+        if (event.equals(getIntent().getStringExtra(CURRENT_EVENT))) {
+            mImageHash = generateImageHash();
+            createImageGallery();
+            lockFocus();
+        }
     }
 
     void createImageGallery() {
@@ -610,6 +633,8 @@ public class CameraActivity extends Activity {
     public void onPause(){
         closeCamera();
         closeBackgroundThread();
+        if (mBroadcastReceiver != null) unregisterReceiver(mBroadcastReceiver);
+
         super.onPause();
     }
 
@@ -622,6 +647,9 @@ public class CameraActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
+        if (mBroadcastReceiver == null) mBroadcastReceiver = new ImageCaptureReceiver();
+        IntentFilter intentFilter = new IntentFilter(StaticResources.BEGIN_IMAGE_CAPTURE);
+        registerReceiver(mBroadcastReceiver, intentFilter);
         openBackgroundThread();
 
         if(mTextureView.isAvailable()) {

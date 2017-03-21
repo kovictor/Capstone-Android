@@ -1,7 +1,10 @@
 package com.capstonappdeveloper.capstone_android.Messaging;
 
+import android.content.Intent;
 import android.util.Log;
 
+import com.capstonappdeveloper.capstone_android.CameraActivity;
+import com.capstonappdeveloper.capstone_android.StaticResources;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -19,5 +22,9 @@ public class FirebaseSyncService extends FirebaseMessagingService {
         Log.d(TAG, "From: " + remoteMessage.getFrom());
         //Log.d(TAG, "Notification Message Body: " + remoteMessage.getNotification().getBody());
         System.out.println("GOT A MESSAGE FROM FIREBASE");
+        Intent intent = new Intent(StaticResources.BEGIN_IMAGE_CAPTURE);
+        Log.d("GOT TOPIC", remoteMessage.getFrom().split("/")[2]);
+        intent.putExtra(CameraActivity.CURRENT_EVENT, remoteMessage.getFrom().split("/")[2]);
+        sendBroadcast(intent);
     }
 }

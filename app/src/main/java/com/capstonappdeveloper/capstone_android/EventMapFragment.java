@@ -33,6 +33,7 @@ public class EventMapFragment extends Fragment
     private LatLng currentPin;
     private GoogleMap googleMap;
     private SupportMapFragment fragment;
+    private String currentEvent;
 
     LinearLayout overheadBanner;
     ImageView overheadIcon;
@@ -93,10 +94,15 @@ public class EventMapFragment extends Fragment
         );
     }
 
+    public String getCurrentEvent() {
+        return currentEvent;
+    }
+
     public void setOverhead(Event event) {
         overheadIcon.setImageBitmap(event.icon);
         overheadTitle.setText(event.eventName);
         currentPin = event.coordinates;
+        this.currentEvent = event.id;
     }
 
     @Override
