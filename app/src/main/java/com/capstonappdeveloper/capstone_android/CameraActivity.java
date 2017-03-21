@@ -43,6 +43,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.capstonappdeveloper.capstone_android.Protocol.Map.SynchronizeCapture;
+import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoUploader;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -92,6 +93,7 @@ public class CameraActivity extends Activity {
     private String mImageHash;
     private Size mPreviewSize;
     private String mCameraId;
+    private String eventID;
     private TextureView mTextureView;
     private CaptureRequest mPreviewCaptureRequest;
     private CaptureRequest.Builder mPreviewCaptureRequestBuilder;
@@ -359,6 +361,7 @@ public class CameraActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camara_intent);
 
+        this.eventID = getIntent().getStringExtra(CURRENT_EVENT);
         createImageGallery();
         unLockFocus();
 
@@ -426,7 +429,7 @@ public class CameraActivity extends Activity {
     }
 
     public void takePhoto(String event) {
-        if (event.equals(getIntent().getStringExtra(CURRENT_EVENT))) {
+        if (event.equals(eventID)) {
             mImageHash = generateImageHash();
             createImageGallery();
             lockFocus();
@@ -665,6 +668,7 @@ public class CameraActivity extends Activity {
         int index = mImageFileLocation.lastIndexOf("/");
         intent.putExtra(PlaybackActivity.FILE_PATH_EXTRA, mImageFileLocation.substring(0, index));
         intent.putExtra(PlaybackActivity.FILE_NAME_BASE, mImageHash);
+        new VideoUploader(this.eventID).execute(mImageFileLocation.substring(0, index) + '/' + mImageHash + "_0");
         startActivity(intent);
     }
 }
