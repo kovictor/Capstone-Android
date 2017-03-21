@@ -104,8 +104,10 @@ public class VideoUploader extends AsyncTask<String, String, String> {
             dos = new DataOutputStream(conn.getOutputStream());
 
             dos.writeBytes(TWO_HYPHENS + BOUNDARY + LINE_END);
-            dos.writeBytes("Content-Disposition: form-data; name=\"image\";filename=\""+ "image" + "\"" + LINE_END);
-            dos.writeBytes(LINE_END);
+            dos.writeBytes("Content-Disposition: form-data;name=\"uid\"" + LINE_END + LINE_END + Integer.toString(1337) + LINE_END);
+            dos.writeBytes(TWO_HYPHENS + BOUNDARY + LINE_END);
+            dos.writeBytes("Content-Disposition: form-data;name=\"image\";filename=\""+ "HEYBUDDY.jpg" + "\"" + LINE_END);
+            dos.writeBytes("Content-Type: image/png" + LINE_END + LINE_END);
 
             buffer = new byte[bufferSize];
 
@@ -135,7 +137,7 @@ public class VideoUploader extends AsyncTask<String, String, String> {
             dos.close();
             //this block will give the response of upload link
             BufferedReader rd = new BufferedReader(new InputStreamReader(conn
-                    .getErrorStream()));
+                    .getInputStream()));
             String line;
             while ((line = rd.readLine()) != null) {
                 Log.i("Huzza", "RES capstone Message: " + line);
