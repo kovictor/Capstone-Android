@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -24,8 +25,13 @@ public class VideoUploader extends AsyncTask<String, String, String> {
     private static String TWO_HYPHENS = "--";
     private static String BOUNDARY = "*****";
     private static String LINE_END = "\r\n";
+    private String eventID;
     //set the max buffer size to 100MB, as specified on our apache server in /etc/php.ini
     private static int MAX_BUFFER_SIZE = 100 * ((2 << 19) - 1);
+
+    public VideoUploader(String eventID) {
+        this.eventID = eventID;
+    }
 
     @Override
     protected void onPreExecute() {
@@ -46,6 +52,18 @@ public class VideoUploader extends AsyncTask<String, String, String> {
 
     protected void onProgressUpdate(String... progress) {
 
+    }
+
+    private URL formURL() {
+        try {
+            Log.d("PERFORMING UPLOAD", this.eventID);
+            return new URL(StaticResources.HTTP_PREFIX +
+                    StaticResources.ProdServer +
+                    StaticResources.VIDEO_UPLOAD_SCRIPT +
+                    this.eventID);
+        } catch (MalformedURLException e) {
+            return null;
+        }
     }
 
     private void uploadVideo(String sourceFileUri) {
@@ -71,9 +89,7 @@ public class VideoUploader extends AsyncTask<String, String, String> {
             Log.d("Huzza", "Initial capstone .available : " + bytesAvailable);
 
             bufferSize = Math.min(bytesAvailable, MAX_BUFFER_SIZE);
-            URL url = new URL(StaticResources.HTTP_PREFIX +
-                              StaticResources.ProdServer +
-                              StaticResources.VIDEO_UPLOAD_SCRIPT);
+            URL url = formURL();
             conn = (HttpURLConnection) url.openConnection(); // Open a HTTP  connection to  the URL
             conn.setDoInput(true); // Allow Inputs
             conn.setDoOutput(true); // Allow Outputs
@@ -83,10 +99,12 @@ public class VideoUploader extends AsyncTask<String, String, String> {
             conn.setRequestProperty("ENCTYPE", "multipart/form-data");
             conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + BOUNDARY);
             conn.setRequestProperty("file", fileName);
+            conn.setRequestProperty("id", this.eventID);
+            conn.setRequestProperty("uid", Integer.toString(0));
             dos = new DataOutputStream(conn.getOutputStream());
 
             dos.writeBytes(TWO_HYPHENS + BOUNDARY + LINE_END);
-            dos.writeBytes("Content-Disposition: form-data; name=\"file\";filename=\""+ fileName + "\"" + LINE_END);
+            dos.writeBytes("Content-Disposition: form-data; name=\"image\";filename=\""+ "image" + "\"" + LINE_END);
             dos.writeBytes(LINE_END);
 
             buffer = new byte[bufferSize];
@@ -117,7 +135,7 @@ public class VideoUploader extends AsyncTask<String, String, String> {
             dos.close();
             //this block will give the response of upload link
             BufferedReader rd = new BufferedReader(new InputStreamReader(conn
-                    .getInputStream()));
+                    .getErrorStream()));
             String line;
             while ((line = rd.readLine()) != null) {
                 Log.i("Huzza", "RES capstone Message: " + line);

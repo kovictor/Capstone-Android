@@ -49,7 +49,7 @@ public class EventMapFragment extends Fragment
         overheadIcon = (ImageView) view.findViewById(R.id.event_icon);
         overheadTitle = (TextView) view.findViewById(R.id.event_title);
         //Todo: Get the actual gps location of the user
-        homeLocation = new LatLng(-79, 79);
+        homeLocation = new LatLng(43.761539, -79.411079);
         events = new HashMap<String, Event>();
         currentPin = null;
 

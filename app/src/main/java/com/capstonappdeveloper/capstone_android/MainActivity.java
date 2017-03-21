@@ -6,9 +6,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 
-import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoFileNavigator;
-import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoUploader;
-
 /**
  * For now, we're just swapping fragments into the framelayout "fragment_container"
  * but eventually we'll probably want to move to something like a viewPager
@@ -87,7 +84,7 @@ public class MainActivity extends FragmentActivity {
         hideSelectors();
         menuSelector.setVisibility(View.VISIBLE);
         if (StaticResources.isNetworkAvailable(this)) {
-            new VideoUploader().execute(VideoFileNavigator.getVideoFromInternalStorage(this, ""));
+            //new VideoUploader(this.event).execute(VideoFileNavigator.getVideoFromInternalStorage(this, ""));
         }
     }
 }
