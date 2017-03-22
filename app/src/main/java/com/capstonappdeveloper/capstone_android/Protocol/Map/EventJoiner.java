@@ -78,6 +78,8 @@ public class EventJoiner extends AsyncTask<String, String, String> {
     @Override
     protected void onPostExecute(String string) {
         mapFragment.hideSpinner();
-        mapFragment.enterEvent(this.numParticipants);
+        if (this.numParticipants > 0) {
+            mapFragment.enterEvent(this.numParticipants);
+        }
     }
 }

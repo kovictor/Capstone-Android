@@ -48,11 +48,6 @@
             android:label="@string/title_activity_playback"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
-        <activity
-            android:name=".CreateEventActivity"
-            android:label="@string/title_activity_create_event"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
 
         <service android:name=".Messaging.FirebaseSyncService">
             <intent-filter>

@@ -682,7 +682,7 @@ public class CameraActivity extends Activity {
         int index = mImageFileLocation.lastIndexOf("/");
         intent.putExtra(PlaybackActivity.FILE_PATH_EXTRA, mImageFileLocation.substring(0, index));
         intent.putExtra(PlaybackActivity.FILE_NAME_BASE, mImageHash);
-        new VideoUploader(this.eventID).execute(mImageFileLocation.substring(0, index) + '/' + mImageHash + "_0");
+        new VideoUploader(this.eventID, numParticipants).execute(mImageFileLocation.substring(0, index) + '/' + mImageHash + "_0");
         startActivity(intent);
     }
 }

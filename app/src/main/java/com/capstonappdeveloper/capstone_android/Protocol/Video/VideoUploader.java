@@ -26,11 +26,13 @@ public class VideoUploader extends AsyncTask<String, String, String> {
     private static String BOUNDARY = "*****";
     private static String LINE_END = "\r\n";
     private String eventID;
+    private int uid;
     //set the max buffer size to 100MB, as specified on our apache server in /etc/php.ini
     private static int MAX_BUFFER_SIZE = 100 * ((2 << 19) - 1);
 
-    public VideoUploader(String eventID) {
+    public VideoUploader(String eventID, int uid) {
         this.eventID = eventID;
+        this.uid = uid;
     }
 
     @Override
@@ -104,7 +106,7 @@ public class VideoUploader extends AsyncTask<String, String, String> {
             dos = new DataOutputStream(conn.getOutputStream());
 
             dos.writeBytes(TWO_HYPHENS + BOUNDARY + LINE_END);
-            dos.writeBytes("Content-Disposition: form-data;name=\"uid\"" + LINE_END + LINE_END + Integer.toString(1337) + LINE_END);
+            dos.writeBytes("Content-Disposition: form-data;name=\"uid\"" + LINE_END + LINE_END + Integer.toString(this.uid) + LINE_END);
             dos.writeBytes(TWO_HYPHENS + BOUNDARY + LINE_END);
             dos.writeBytes("Content-Disposition: form-data;name=\"image\";filename=\""+ "HEYBUDDY.jpg" + "\"" + LINE_END);
             dos.writeBytes("Content-Type: image/png" + LINE_END + LINE_END);
