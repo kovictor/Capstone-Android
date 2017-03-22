@@ -1,10 +1,11 @@
 package com.capstonappdeveloper.capstone_android;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
+
+import com.capstonappdeveloper.capstone_android.Protocol.Map.EventJoiner;
 
 /**
  * For now, we're just swapping fragments into the framelayout "fragment_container"
@@ -65,13 +66,11 @@ public class MainActivity extends FragmentActivity {
                 .commit();
     }
 
-    public void onCameraButtonClick(View v) {
-        System.out.println("In onCameraButtonClick");
-        //Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            Intent intent = new Intent(this, CameraActivity.class);
-            intent.putExtra(CameraActivity.CURRENT_EVENT, mapFragment.getCurrentEvent());
-            startActivity(intent);
+    public void joinEvent(View v) {
+        mapFragment.showSpinner();
+        new EventJoiner(mapFragment).execute();
     }
+
 
     public void onMenuButtonClick(View v) {
         System.out.println("In onMenuButtonClick");
@@ -80,11 +79,7 @@ public class MainActivity extends FragmentActivity {
         */
     }
 
-    public void testVideoUpload(View v) {
-        hideSelectors();
-        menuSelector.setVisibility(View.VISIBLE);
-        if (StaticResources.isNetworkAvailable(this)) {
-            //new VideoUploader(this.event).execute(VideoFileNavigator.getVideoFromInternalStorage(this, ""));
-        }
+    public void fetchEvents(View v) {
+        mapFragment.fetchEvents();
     }
 }

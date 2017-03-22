@@ -3,4 +3,16 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_playback">PlaybackActivity</string>
     <string name="title_activity_create_event">CreateEventActivity</string>
+    <string name="submit">Create Event!</string>
+
+    <string name="submit">Create Event!</string>
+
+    <string name="submit">Create Event!</string>
+
+    <string name="submit">Create Event!</string>
+
+    <string name="submit">Create Event!</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

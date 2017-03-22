@@ -1,9 +1,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-android:layout_height="match_parent" android:paddingLeft="16dp"
-android:paddingRight="16dp"
-android:paddingTop="16dp"
-android:paddingBottom="16dp" tools:context=".CameraActivity">
+xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context=".CameraActivity">
 
     <TextureView
         android:layout_width="wrap_content"
@@ -12,12 +11,33 @@ android:paddingBottom="16dp" tools:context=".CameraActivity">
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Take Photo"
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/tool_bar_height"
+        android:background="@android:color/white">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"/>
+
+        <TextView
+            android:id="@+id/participant_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/general_padding"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"/>
+    </RelativeLayout>
+
+    <ImageView
+        android:layout_width="@dimen/camera_button_size"
+        android:layout_height="@dimen/camera_button_size"
+        android:src="@drawable/camerabutton"
         android:id="@+id/photoButton"
         android:onClick="sendTakePhotoBroadcast"
+        android:padding="@dimen/general_padding"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 

@@ -119,6 +119,7 @@ public class EventFetcher extends AsyncTask<String, String, String> {
     @Override
     protected void onPostExecute(String string) {
         if (events.isEmpty()) {
+            mapFragment.showRetry();
             return;
         }
 
@@ -142,6 +143,7 @@ public class EventFetcher extends AsyncTask<String, String, String> {
                 )
         );
         mapFragment.setOverhead(eventOfInterest);
+        mapFragment.hideSpinner();
     }
 
     protected void onProgressUpdate(String... progress) {

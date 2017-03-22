@@ -40,6 +40,7 @@ import android.view.MenuItem;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.capstonappdeveloper.capstone_android.Protocol.Map.SynchronizeCapture;
@@ -74,7 +75,9 @@ public class CameraActivity extends Activity {
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
 
-    public static final String CURRENT_EVENT = "current_event";
+    public static final String CURRENT_EVENT_ID = "current_event_id";
+    public static final String CURRENT_EVENT_NAME = "current_event_name";
+    public static final String NUM_PARTICIPANTS = "num_participants";
     public static final int IMAGE_FORMAT = ImageFormat.JPEG;
     private static final int ACTIVITY_START_CAMERA_APP = 0;
     private static enum CAPTURE_STATE {
@@ -94,7 +97,11 @@ public class CameraActivity extends Activity {
     private Size mPreviewSize;
     private String mCameraId;
     private String eventID;
+    private String eventName;
+    private int numParticipants;
     private TextureView mTextureView;
+    private TextView mTitle;
+    private TextView mParticipantCount;
     private CaptureRequest mPreviewCaptureRequest;
     private CaptureRequest.Builder mPreviewCaptureRequestBuilder;
     private CameraCaptureSession mCameraCaptureSession;
@@ -119,7 +126,7 @@ public class CameraActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(StaticResources.BEGIN_IMAGE_CAPTURE)) {
-                takePhoto(intent.getStringExtra(CURRENT_EVENT));
+                takePhoto(intent.getStringExtra(CURRENT_EVENT_ID));
                 Log.d("BROADCAST RECEIVED", "STARTING THE SYNCHRONIZED IMAGE CAPTURE NOW");
             }
         }
@@ -361,13 +368,20 @@ public class CameraActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camara_intent);
 
-        this.eventID = getIntent().getStringExtra(CURRENT_EVENT);
+        this.eventID = getIntent().getStringExtra(CURRENT_EVENT_ID);
+        this.eventName = getIntent().getStringExtra(CURRENT_EVENT_NAME);
+        this.numParticipants = getIntent().getIntExtra(NUM_PARTICIPANTS, 0);
         createImageGallery();
         unLockFocus();
 
+        mTitle = (TextView) findViewById(R.id.title);
+        mParticipantCount = (TextView) findViewById(R.id.participant_count);
         mRecyclerView = (RecyclerView) findViewById(R.id.galleryRecyclerView);
         GridLayoutManager layoutManager = new GridLayoutManager(this, 1);
         layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+
+        mTitle.setText(eventName);
+        mParticipantCount.setText(Integer.toString(this.numParticipants) + " scopers");
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){

@@ -45,9 +45,34 @@
             android:layout_height="35dp"
             android:paddingRight="15dp"
             android:src="@drawable/arrow"
-            android:onClick="onCameraButtonClick"
+            android:onClick="joinEvent"
             />
     </LinearLayout>
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/darken_filter"
+        android:background="@android:color/white">
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/retry_button"
+        android:layout_width="@dimen/tool_bar_height"
+        android:layout_height="@dimen/tool_bar_height"
+        android:src="@drawable/retry"
+        android:layout_gravity = "center"
+        android:visibility="gone"
+        android:onClick="fetchEvents"
+        />
+
+    <ProgressBar
+        android:id="@+id/load_spinner"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity = "center"
+        android:visibility="gone">
+    </ProgressBar>
 </FrameLayout>
 

@@ -1,5 +1,6 @@
 package com.capstonappdeveloper.capstone_android;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -9,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.capstonappdeveloper.capstone_android.Protocol.Map.Event;
@@ -33,11 +36,15 @@ public class EventMapFragment extends Fragment
     private LatLng currentPin;
     private GoogleMap googleMap;
     private SupportMapFragment fragment;
-    private String currentEvent;
+    private Event currentEvent;
+    private ProgressBar dialog;
+    private static boolean initalized;
 
     LinearLayout overheadBanner;
     ImageView overheadIcon;
     TextView overheadTitle;
+    RelativeLayout darkenFilter;
+    ImageView retryButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -45,6 +52,9 @@ public class EventMapFragment extends Fragment
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.map_fragment, container, false);
 
+        retryButton = (ImageView) view.findViewById(R.id.retry_button);
+        darkenFilter = (RelativeLayout) view.findViewById(R.id.darken_filter);
+        dialog = (ProgressBar) view.findViewById(R.id.load_spinner);
         overheadBanner = (LinearLayout) view.findViewById(R.id.event_banner);
         overheadIcon = (ImageView) view.findViewById(R.id.event_icon);
         overheadTitle = (TextView) view.findViewById(R.id.event_title);
@@ -52,8 +62,19 @@ public class EventMapFragment extends Fragment
         homeLocation = new LatLng(43.761539, -79.411079);
         events = new HashMap<String, Event>();
         currentPin = null;
+        showSpinner();
 
         return view;
+    }
+
+    protected void showSpinner() {
+        dialog.setVisibility(View.VISIBLE);
+        darkenFilter.setAlpha((float) 0.7);
+    }
+
+    public void hideSpinner() {
+        dialog.setVisibility(View.GONE);
+        darkenFilter.setAlpha((float) 0.0);
     }
 
     @Override
@@ -84,6 +105,7 @@ public class EventMapFragment extends Fragment
         }
         else {
             Log.d("Internet not connected", "Wifi connection unavailable");
+            showRetry();
         }
     }
 
@@ -94,21 +116,41 @@ public class EventMapFragment extends Fragment
         );
     }
 
-    public String getCurrentEvent() {
-        return currentEvent;
+    public String getCurrentEventID() {
+        return currentEvent.id;
     }
 
     public void setOverhead(Event event) {
         overheadIcon.setImageBitmap(event.icon);
         overheadTitle.setText(event.eventName);
         currentPin = event.coordinates;
-        this.currentEvent = event.id;
+        this.currentEvent = event;
     }
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
         setOverhead(events.get(marker.getSnippet()));
         return true;
+    }
+
+    public void showRetry() {
+        hideSpinner();
+        darkenFilter.setAlpha((float) 0.7);
+        retryButton.setVisibility(View.VISIBLE);
+    }
+
+    public void fetchEvents() {
+        new EventFetcher(this).execute();
+        showSpinner();
+        retryButton.setVisibility(View.GONE);
+    }
+
+    public void enterEvent(int numParticipants) {
+        Intent intent = new Intent(getContext(), CameraActivity.class);
+        intent.putExtra(CameraActivity.CURRENT_EVENT_ID, currentEvent.id);
+        intent.putExtra(CameraActivity.CURRENT_EVENT_NAME, currentEvent.eventName);
+        intent.putExtra(CameraActivity.NUM_PARTICIPANTS, numParticipants);
+        startActivity(intent);
     }
 
     //some getters

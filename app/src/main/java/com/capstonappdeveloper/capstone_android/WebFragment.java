@@ -27,10 +27,7 @@ public class WebFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
     }
 
-    protected void showSpinner(View v) {
-        dialog = (ProgressBar) v.findViewById(R.id.load_spinner);
-        dialog.setVisibility(View.VISIBLE);
-    }
+    protected void showSpinner() { dialog.setVisibility(View.VISIBLE); }
 
     protected void hideSpinner() {
         dialog.setVisibility(View.GONE);
@@ -41,13 +38,14 @@ public class WebFragment extends Fragment {
                              ViewGroup container,
                              Bundle savedInstanceState) {
         final View parentView = inflater.inflate(R.layout.webview_layout, container, false);
+        dialog = (ProgressBar) parentView.findViewById(R.id.load_spinner);
 
         if (URL != null) {
             WebView webview = (WebView) parentView.findViewById(R.id.webview);
             webview.setWebViewClient(new WebViewClient() {
                 @Override
                 public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                    showSpinner(parentView);
+                    showSpinner();
                 }
                 @Override
                 public void onPageFinished(WebView view, String url) {

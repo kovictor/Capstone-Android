@@ -24,7 +24,7 @@ public class FirebaseSyncService extends FirebaseMessagingService {
         System.out.println("GOT A MESSAGE FROM FIREBASE");
         Intent intent = new Intent(StaticResources.BEGIN_IMAGE_CAPTURE);
         Log.d("GOT TOPIC", remoteMessage.getFrom().split("/")[2]);
-        intent.putExtra(CameraActivity.CURRENT_EVENT, remoteMessage.getFrom().split("/")[2]);
+        intent.putExtra(CameraActivity.CURRENT_EVENT_ID, remoteMessage.getFrom().split("/")[2]);
         sendBroadcast(intent);
     }
 }
