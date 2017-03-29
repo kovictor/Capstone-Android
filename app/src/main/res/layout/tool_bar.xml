@@ -18,7 +18,7 @@
             android:clickable="true"
             android:layout_centerHorizontal="true"
             android:src="@drawable/menu"
-            android:onClick="testVideoUpload"/>
+            android:onClick="createEventTab"/>
         <View
             android:id="@+id/menu_selector"
             android:visibility="gone"

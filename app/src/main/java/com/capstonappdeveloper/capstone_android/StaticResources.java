@@ -16,6 +16,7 @@ public class StaticResources {
     //scripts
     public static String VIDEO_UPLOAD_SCRIPT = "/event/upload/";
     public static String GET_LOCAL_EVENTS_SCRIPT = "/events";
+    public static String CREATE_EVENT_SCRIPT = "/event/";
     public static String JOIN_EVENT_SCRIPT = "/event/join/";
     public static String SYNCHRONIZE_CAPTURE_SCRIPT = "/broadcast";
     public static String BEGIN_IMAGE_CAPTURE = "begin_image_capture";

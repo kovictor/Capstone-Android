@@ -1,6 +1,7 @@
 package com.capstonappdeveloper.capstone_android;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -8,20 +9,24 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.capstonappdeveloper.capstone_android.Protocol.Map.CreateEventUploader;
 import com.capstonappdeveloper.capstone_android.Protocol.Map.Event;
 import com.capstonappdeveloper.capstone_android.Protocol.Map.EventFetcher;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.HashMap;
 
@@ -29,22 +34,25 @@ import java.util.HashMap;
  * Created by james on 2016-12-01.
  */
 public class EventMapFragment extends Fragment
-        implements OnMapReadyCallback, OnMarkerClickListener {
+        implements OnMapReadyCallback, OnMarkerClickListener, OnMapClickListener {
 
     private HashMap<String, Event> events;
     private LatLng homeLocation;
     private LatLng currentPin;
+    private Marker createPin;
     private GoogleMap googleMap;
     private SupportMapFragment fragment;
     private Event currentEvent;
     private ProgressBar dialog;
-    private static boolean initalized;
+    private static boolean createMode = false;
 
     LinearLayout overheadBanner;
     ImageView overheadIcon;
+    ImageView overheadButton;
     TextView overheadTitle;
     RelativeLayout darkenFilter;
     ImageView retryButton;
+    EditText eventNameField;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -57,13 +65,14 @@ public class EventMapFragment extends Fragment
         dialog = (ProgressBar) view.findViewById(R.id.load_spinner);
         overheadBanner = (LinearLayout) view.findViewById(R.id.event_banner);
         overheadIcon = (ImageView) view.findViewById(R.id.event_icon);
+        overheadButton = (ImageView) view.findViewById(R.id.camera_button);
         overheadTitle = (TextView) view.findViewById(R.id.event_title);
+        eventNameField = (EditText) view.findViewById(R.id.create_event_field);
         //Todo: Get the actual gps location of the user
         homeLocation = new LatLng(43.761539, -79.411079);
         events = new HashMap<String, Event>();
         currentPin = null;
-        showSpinner();
-
+        createPin = null;
         return view;
     }
 
@@ -98,10 +107,11 @@ public class EventMapFragment extends Fragment
     public void onMapReady(GoogleMap map) {
         this.googleMap = map;
         googleMap.setOnMarkerClickListener(this);
+        googleMap.setOnMapClickListener(this);
 
         if (StaticResources.isNetworkAvailable(getActivity())) {
             Log.d("EVENT SYNC", "Starting event fetch from server");
-            new EventFetcher(this).execute();
+            fetchEvents();
         }
         else {
             Log.d("Internet not connected", "Wifi connection unavailable");
@@ -124,12 +134,15 @@ public class EventMapFragment extends Fragment
         overheadIcon.setImageBitmap(event.icon);
         overheadTitle.setText(event.eventName);
         currentPin = event.coordinates;
+        overheadBanner.setVisibility(View.VISIBLE);
         this.currentEvent = event;
     }
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-        setOverhead(events.get(marker.getSnippet()));
+        if (!getCreateMode()) {
+            setOverhead(events.get(marker.getSnippet()));
+        }
         return true;
     }
 
@@ -140,9 +153,9 @@ public class EventMapFragment extends Fragment
     }
 
     public void fetchEvents() {
-        new EventFetcher(this).execute();
         showSpinner();
         retryButton.setVisibility(View.GONE);
+        new EventFetcher(this).execute();
     }
 
     public void enterEvent(int numParticipants) {
@@ -151,6 +164,46 @@ public class EventMapFragment extends Fragment
         intent.putExtra(CameraActivity.CURRENT_EVENT_NAME, currentEvent.eventName);
         intent.putExtra(CameraActivity.NUM_PARTICIPANTS, numParticipants);
         startActivity(intent);
+    }
+
+    public void setSearchMode() {
+        this.createMode = false;
+        if (createPin != null) {
+            createPin.remove();
+            createPin = null;
+        }
+        eventNameField.setVisibility(View.GONE);
+        overheadIcon.setVisibility(View.VISIBLE);
+        overheadBanner.setBackgroundColor(Color.WHITE);
+        overheadTitle.setVisibility(View.VISIBLE);
+        overheadTitle.setText(currentEvent.eventName);
+        overheadButton.setVisibility(View.VISIBLE);
+    }
+
+    public boolean getCreateMode() {
+        return createMode;
+    }
+
+    public void setCreateMode(boolean mode) {
+        this.createMode = mode;
+    }
+
+    public void setPickLocationMode() {
+        this.createMode = true;
+        eventNameField.setText("");
+        overheadBanner.setBackgroundColor(Color.WHITE);
+        eventNameField.setVisibility(View.GONE);
+        overheadIcon.setVisibility(View.GONE);
+        overheadTitle.setVisibility(View.VISIBLE);
+        overheadTitle.setText(R.string.pick_event_location);
+        overheadButton.setVisibility(View.GONE);
+    }
+
+    public void setCreateEventMode() {
+        overheadBanner.setBackgroundColor(Color.CYAN);
+        eventNameField.setVisibility(View.VISIBLE);
+        overheadTitle.setVisibility(View.GONE);
+        overheadButton.setVisibility(View.VISIBLE);
     }
 
     //some getters
@@ -168,5 +221,29 @@ public class EventMapFragment extends Fragment
 
     public LatLng getHomeLocation() {
         return homeLocation;
+    }
+
+    public void submitNewEvent() {
+        if (createPin != null) {
+            createPin.remove();
+        }
+        showSpinner();
+        String eventName = eventNameField.getText().toString();
+        Event newEvent = new Event(Integer.toString(Math.abs(eventName.hashCode())), createPin.getPosition(), null, eventName);
+        new CreateEventUploader(this, newEvent).execute();
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        if (getCreateMode()) {
+            if (createPin != null) {
+                createPin.remove();
+            }
+            createPin = googleMap.addMarker(new MarkerOptions()
+                    .position(latLng));
+            if (getCreateMode()) {
+                setCreateEventMode();
+            }
+        }
     }
 }

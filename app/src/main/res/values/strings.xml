@@ -6,7 +6,11 @@
     <string name="submit">Create Event!</string>
 
     <string name="event_name">Create Event!</string>
+    <string name="pick_event_location">Tap on the map to choose a location</string>
+    <string name="enter_event_name">Enter event name</string>
+
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>

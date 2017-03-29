@@ -29,6 +29,7 @@ import java.util.HashMap;
 public class EventFetcher extends AsyncTask<String, String, String> {
 
     private HashMap<String, Event> events;
+    private HashMap<String, Event> newEvents;
     private LatLng location;
     private GoogleMap map;
     private static final double range = 10.0;
@@ -38,6 +39,7 @@ public class EventFetcher extends AsyncTask<String, String, String> {
         this.location = mapFragment.getHomeLocation();
         this.map = mapFragment.getMap();
         this.events = mapFragment.getEvents();
+        this.newEvents = new HashMap<String, Event>();
         this.mapFragment = mapFragment;
     }
 
@@ -104,7 +106,7 @@ public class EventFetcher extends AsyncTask<String, String, String> {
                 );
 
                 Log.d("FOUND EVENT", id + ":" + eventName);
-                events.put(id, new Event(id, new LatLng(latitude, longitude), bmp, eventName));
+                newEvents.put(id, new Event(id, new LatLng(latitude, longitude), bmp, eventName));
             }
             rd.close();
         } catch (Exception ex) {
@@ -118,19 +120,22 @@ public class EventFetcher extends AsyncTask<String, String, String> {
 
     @Override
     protected void onPostExecute(String string) {
-        if (events.isEmpty()) {
+        if (newEvents.isEmpty()) {
             mapFragment.showRetry();
             return;
         }
 
         //grab the events and pin them on the map
-        for (Event event : events.values()) {
-            FirebaseMessaging.getInstance().subscribeToTopic(event.id);
-            map.addMarker(new MarkerOptions()
-                    .position(event.coordinates)
-                    .title(event.eventName)
-                    .icon(BitmapDescriptorFactory.fromBitmap(event.icon)))
-                    .setSnippet(event.id);
+        for (Event event : newEvents.values()) {
+            if (!events.containsKey(event.id)) {
+                FirebaseMessaging.getInstance().subscribeToTopic(event.id);
+                map.addMarker(new MarkerOptions()
+                        .position(event.coordinates)
+                        .title(event.eventName)
+                        .icon(BitmapDescriptorFactory.fromBitmap(event.icon)))
+                        .setSnippet(event.id);
+                events.put(event.id, event);
+            }
         }
 
         //for now let's just zoom in on and focus on the event with id "test"

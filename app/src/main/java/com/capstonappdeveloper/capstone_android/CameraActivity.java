@@ -118,7 +118,9 @@ public class CameraActivity extends Activity {
                     HandlerThread newThread = new HandlerThread("");
                     newThread.start();
                     Handler newHandler = new android.os.Handler(newThread.getLooper());
-                    newHandler.post(new ImageSaver(reader.acquireNextImage(), mImageHash, mPictureCount));
+                    newHandler.post(new ImageSaver(reader.acquireNextImage(),
+                                                    mPictureCount,
+                                                    getBaseContext()));
                 }
             };
 
@@ -132,16 +134,18 @@ public class CameraActivity extends Activity {
         }
     }
 
-    private static class ImageSaver implements Runnable {
+    private class ImageSaver implements Runnable {
 
         private final Image mImage;
-        private final String mImageHash;
-        private final int mSequenceNum;
+        private int mSequenceNum;
+        private final Context mContext;
 
-        private ImageSaver(Image image, String imageHash, int sequenceNum){
+        private ImageSaver(Image image,
+                           int sequenceNum,
+                           Context c){
             mImage = image;
-            mImageHash = imageHash;
             mSequenceNum = sequenceNum;
+            mContext = c;
         }
         @Override
         public void run() {
@@ -224,6 +228,22 @@ public class CameraActivity extends Activity {
                         }
                     }
                     break;
+            }
+
+            // Upload the photo
+            // Right now we're only doing 1 photo sequence at a time,
+            // But if that changes, we should do a batch upload all in one server request
+            int index = mImageFileLocation.lastIndexOf("/");
+            new VideoUploader(eventID, numParticipants).execute(mImageFileLocation.substring(0, index) + '/' + mImageHash + "_" + mSequenceNum);
+
+            mSequenceNum++;
+            //If this is the end of the image sequence, start the playback
+            if (mSequenceNum == PlaybackActivity.NUM_IMAGES_PER_SEQUENCE) {
+                Intent intent = new Intent(mContext, PlaybackActivity.class);
+                Log.d("FILE PATH IS", mImageFileLocation);
+                intent.putExtra(PlaybackActivity.FILE_PATH_EXTRA, mImageFileLocation.substring(0, index));
+                intent.putExtra(PlaybackActivity.FILE_NAME_BASE, mImageHash);
+                startActivity(intent);
             }
         }
     };
@@ -470,7 +490,7 @@ public class CameraActivity extends Activity {
     static File createImageFile(String imageHash, int sequenceNum) throws IOException {
         File image = new File(mGalleryFolder, imageHash + "_" + sequenceNum);
         mImageFileLocation = image.getAbsolutePath();
-
+        Log.d("FILE PATH IS", mImageFileLocation);
         return image;
     }
 
@@ -627,10 +647,6 @@ public class CameraActivity extends Activity {
                         public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                             super.onCaptureCompleted(session, request, result);
                             System.out.println("FINISHED TAKING NEW PICTURE");
-                            mPictureCount++;
-                            if (mPictureCount >= PlaybackActivity.NUM_IMAGES_PER_SEQUENCE - 1) {
-                                startPlayback();
-                            }
                         }
                     };
 
@@ -675,14 +691,5 @@ public class CameraActivity extends Activity {
         } else {
             mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
         }
-    }
-
-    public void startPlayback() {
-        Intent intent = new Intent(this, PlaybackActivity.class);
-        int index = mImageFileLocation.lastIndexOf("/");
-        intent.putExtra(PlaybackActivity.FILE_PATH_EXTRA, mImageFileLocation.substring(0, index));
-        intent.putExtra(PlaybackActivity.FILE_NAME_BASE, mImageHash);
-        new VideoUploader(this.eventID, numParticipants).execute(mImageFileLocation.substring(0, index) + '/' + mImageHash + "_0");
-        startActivity(intent);
     }
 }

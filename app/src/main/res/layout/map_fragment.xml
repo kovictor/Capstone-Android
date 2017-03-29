@@ -17,6 +17,7 @@
         android:layout_height="50dp"
         android:orientation="horizontal"
         android:gravity="center"
+        android:visibility="gone"
         android:background="@android:color/white">
 
         <ImageView
@@ -29,9 +30,16 @@
         <TextView
             android:id="@+id/event_title"
             android:layout_width="wrap_content"
-            android:layout_height="15dp"
+            android:layout_height="wrap_content"
             android:paddingLeft="10dp"
             />
+
+        <EditText
+            android:id="@+id/create_event_field"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/enter_event_name"
+            android:visibility="gone"/>
 
         <View
             android:layout_width="0dp"
@@ -45,7 +53,7 @@
             android:layout_height="35dp"
             android:paddingRight="15dp"
             android:src="@drawable/arrow"
-            android:onClick="joinEvent"
+            android:onClick="handleArrowClick"
             />
     </LinearLayout>
 

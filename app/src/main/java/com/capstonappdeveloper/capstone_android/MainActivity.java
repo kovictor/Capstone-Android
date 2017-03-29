@@ -44,18 +44,25 @@ public class MainActivity extends FragmentActivity {
         hideSelectors();
         mapSelector.setVisibility(View.VISIBLE);
 
-        if (currentFragment == mapFragment) return;
-        currentFragment = mapFragment;
+        if (mapFragment.getCreateMode()) {
+            mapFragment.setSearchMode();
+        }
+        else {
+            if (currentFragment == mapFragment) return;
+            currentFragment = mapFragment;
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, mapFragment)
-                .commit();
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, mapFragment)
+                    .commit();
+        }
     }
 
     public void switchToWebView(View v) {
         hideSelectors();
         videoSelector.setVisibility(View.VISIBLE);
+
+        mapFragment.setCreateMode(false);
 
         if (currentFragment == webFragment) return;
         currentFragment = webFragment;
@@ -66,17 +73,21 @@ public class MainActivity extends FragmentActivity {
                 .commit();
     }
 
-    public void joinEvent(View v) {
-        mapFragment.showSpinner();
-        new EventJoiner(mapFragment).execute();
+    public void handleArrowClick(View v) {
+        if (mapFragment.getCreateMode()) {
+            mapFragment.submitNewEvent();
+        }
+        else {
+            mapFragment.showSpinner();
+            new EventJoiner(mapFragment).execute();
+        }
     }
 
 
-    public void onMenuButtonClick(View v) {
-        System.out.println("In onMenuButtonClick");
-        /*Intent intent = new Intent(this, DisplayEventsActivity.class);
-          startActivity(intent);
-        */
+    public void createEventTab(View v) {
+        hideSelectors();
+        mapFragment.setPickLocationMode();
+        menuSelector.setVisibility(View.VISIBLE);
     }
 
     public void fetchEvents(View v) {
