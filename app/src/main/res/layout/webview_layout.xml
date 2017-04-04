@@ -5,10 +5,24 @@
                 android:orientation="vertical"
                 android:background="@android:color/white">
 
+
+    <ListView
+        android:id="@+id/events_list"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/list_height"
+        android:layout_alignParentBottom="true">
+    </ListView>
+
     <WebView
         android:id="@+id/webview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="@dimen/negative_margin"
+        android:layout_marginTop="@dimen/negative_margin"
+        android:layout_above="@id/events_list"/>
 
     <ProgressBar
         android:id="@+id/load_spinner"

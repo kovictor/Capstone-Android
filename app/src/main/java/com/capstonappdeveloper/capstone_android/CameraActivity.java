@@ -43,6 +43,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.capstonappdeveloper.capstone_android.Protocol.Map.EventJoiner;
 import com.capstonappdeveloper.capstone_android.Protocol.Map.SynchronizeCapture;
 import com.capstonappdeveloper.capstone_android.Protocol.Video.VideoUploader;
 
@@ -333,24 +334,13 @@ public class CameraActivity extends Activity {
                     continue;
                 }
                 StreamConfigurationMap map = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-
-                Size imageSize = Collections.min(
-                        Arrays.asList(map.getOutputSizes(IMAGE_FORMAT)),
-                        new Comparator<Size>() {
-                            @Override
-                            public int compare(Size o1, Size o2) {
-                                return Long.signum(o1.getWidth() * o1.getHeight() - o2.getHeight() * o2.getWidth());
-                            }
-                        }
-                );
-                mImageReader = ImageReader.newInstance(imageSize.getWidth(),
-                        imageSize.getHeight(),
+                mPreviewSize = getPreferredPreviewSize(map.getOutputSizes(SurfaceTexture.class), width, height);
+                mImageReader = ImageReader.newInstance(mPreviewSize.getWidth(),
+                        mPreviewSize.getHeight(),
                         IMAGE_FORMAT,
                         1);
                 mImageReader.setOnImageAvailableListener(mOnImageAvailableListener,
                         mBackgroundHandler);
-
-                mPreviewSize = getPreferredPreviewSize(map.getOutputSizes(SurfaceTexture.class), width, height);
                 mCameraId = cameraId;
                 return;
             }
@@ -459,7 +449,7 @@ public class CameraActivity extends Activity {
     }
 
     public void sendTakePhotoBroadcast(View view) {
-        new SynchronizeCapture("test").execute();
+        new SynchronizeCapture(eventID).execute();
     }
 
     public void takePhoto(String event) {
@@ -674,7 +664,7 @@ public class CameraActivity extends Activity {
     @Override
     public void onDestroy(){
         super.onDestroy();
-
+        new EventJoiner(this.eventID).execute();
     }
 
     @Override

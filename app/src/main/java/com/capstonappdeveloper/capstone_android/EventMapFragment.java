@@ -1,6 +1,8 @@
 package com.capstonappdeveloper.capstone_android;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -19,16 +21,19 @@ import android.widget.TextView;
 import com.capstonappdeveloper.capstone_android.Protocol.Map.CreateEventUploader;
 import com.capstonappdeveloper.capstone_android.Protocol.Map.Event;
 import com.capstonappdeveloper.capstone_android.Protocol.Map.EventFetcher;
+import com.capstonappdeveloper.capstone_android.Protocol.Video.BitmapLoader;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.HashMap;
+import java.util.Random;
 
 /**
  * Created by james on 2016-12-01.
@@ -229,7 +234,21 @@ public class EventMapFragment extends Fragment
         }
         showSpinner();
         String eventName = eventNameField.getText().toString();
-        Event newEvent = new Event(Integer.toString(Math.abs(eventName.hashCode())), createPin.getPosition(), null, eventName);
+        // create a layoutInflater for marker bitmap creation
+        View customMarkerView = ((LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.event_marker, null);
+        int randomIcon = StaticResources.eventIcons[new Random().nextInt(StaticResources.numIcons)];
+        Bitmap bmp = BitmapLoader.getMarkerBitmapFromView(randomIcon, customMarkerView);
+
+        Event newEvent = new Event(Integer.toString(Math.abs(eventName.hashCode())), createPin.getPosition(), bmp, eventName);
+        events.put(newEvent.id, newEvent);
+        googleMap.addMarker(new MarkerOptions()
+                .position(newEvent.coordinates)
+                .title(newEvent.eventName)
+                .icon(BitmapDescriptorFactory.fromBitmap(newEvent.icon)))
+                .setSnippet(newEvent.id);
+        if (getCreateMode()) {
+            setCreateEventMode();
+        }
         new CreateEventUploader(this, newEvent).execute();
     }
 

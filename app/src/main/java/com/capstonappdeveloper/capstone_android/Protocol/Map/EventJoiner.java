@@ -19,10 +19,16 @@ import java.net.URL;
 public class EventJoiner extends AsyncTask<String, String, String> {
 
     private int numParticipants = 0;
+    private String eventID;
     EventMapFragment mapFragment;
+
 
     public EventJoiner(EventMapFragment mapFragment) {
         this.mapFragment = mapFragment;
+    }
+    public EventJoiner(String eventID) {
+        this.mapFragment = null;
+        this.eventID = eventID;
     }
 
     @Override
@@ -40,7 +46,7 @@ public class EventJoiner extends AsyncTask<String, String, String> {
     String formURL() {
         return StaticResources.HTTP_PREFIX +
                 StaticResources.ProdServer +
-                StaticResources.JOIN_EVENT_SCRIPT +
+                ((mapFragment == null) ? StaticResources.JOIN_EVENT_SCRIPT : StaticResources.LEAVE_EVENT_SCRIPT) +
                 mapFragment.getCurrentEventID();
     }
 
@@ -68,6 +74,7 @@ public class EventJoiner extends AsyncTask<String, String, String> {
             rd.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+            this.numParticipants = 1;
         } finally {
             if (conn != null) {
                 conn.disconnect();
@@ -77,8 +84,8 @@ public class EventJoiner extends AsyncTask<String, String, String> {
 
     @Override
     protected void onPostExecute(String string) {
-        mapFragment.hideSpinner();
-        if (this.numParticipants > 0) {
+        if (mapFragment != null) {
+            mapFragment.hideSpinner();
             mapFragment.enterEvent(this.numParticipants);
         }
     }

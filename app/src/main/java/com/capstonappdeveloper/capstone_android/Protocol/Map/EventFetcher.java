@@ -1,12 +1,17 @@
 package com.capstonappdeveloper.capstone_android.Protocol.Map;
 
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 
 import com.capstonappdeveloper.capstone_android.EventMapFragment;
+import com.capstonappdeveloper.capstone_android.Protocol.Video.BitmapLoader;
+import com.capstonappdeveloper.capstone_android.R;
 import com.capstonappdeveloper.capstone_android.StaticResources;
+import com.capstonappdeveloper.capstone_android.WebFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -15,6 +20,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -22,6 +28,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Random;
 
 /**
  * Created by james on 2016-11-28.
@@ -32,8 +39,11 @@ public class EventFetcher extends AsyncTask<String, String, String> {
     private HashMap<String, Event> newEvents;
     private LatLng location;
     private GoogleMap map;
+    private String eventID;
     private static final double range = 10.0;
     EventMapFragment mapFragment;
+    WebFragment webFragment;
+    Context c;
 
     public EventFetcher(EventMapFragment mapFragment) {
         this.location = mapFragment.getHomeLocation();
@@ -41,6 +51,14 @@ public class EventFetcher extends AsyncTask<String, String, String> {
         this.events = mapFragment.getEvents();
         this.newEvents = new HashMap<String, Event>();
         this.mapFragment = mapFragment;
+        this.c = mapFragment.getContext();
+    }
+
+    public EventFetcher(WebFragment webFragment) {
+        this.location = null;
+        this.newEvents = new HashMap<String, Event>();
+        this.webFragment = webFragment;
+        this.c = webFragment.getContext();
     }
 
     @Override
@@ -64,6 +82,12 @@ public class EventFetcher extends AsyncTask<String, String, String> {
                 "&range=" + this.range;
     }
 
+    String formURL() {
+        return StaticResources.HTTP_PREFIX +
+                StaticResources.ProdServer +
+                StaticResources.GET_ARCHIVED_EVENTS_SCRIPT;
+    }
+
     private Bitmap scaleBitmap(Bitmap bmp, int dim) {
         int width = bmp.getWidth();
         int height = bmp.getHeight();
@@ -75,7 +99,8 @@ public class EventFetcher extends AsyncTask<String, String, String> {
     private void fetchEvents(LatLng currentLocation) {
         HttpURLConnection conn = null;
         try {
-            URL url = new URL(formURL(currentLocation));
+            String urlString = currentLocation != null ? formURL(currentLocation) : formURL();
+            URL url = new URL(urlString);
 
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -90,23 +115,40 @@ public class EventFetcher extends AsyncTask<String, String, String> {
             }
 
             //parse JSON
+            Log.d("JSON RESPONSE", response);
+
+            // create a layoutInflater for marker bitmap creation
+            View customMarkerView = ((LayoutInflater) c.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.event_marker, null);
+
             JSONArray array = new JSONArray(response);
             for(int i=0;i<array.length();i++) {
                 JSONObject e = array.getJSONObject(i);
 
-                String id = e.getString("id");
+                String id = eventID = e.getString("id");
                 double longitude = e.getDouble("longitude");
                 double latitude = e.getDouble("latitude");
                 URL iconUrl = new URL(e.getString("thumbnail"));
                 String eventName = e.getString("name");
+                String timeCreated = null;
+                int numParticipants = 0;
+                try {
+                    timeCreated = e.getString("time_created");
+                    numParticipants = e.getInt("num_participants");
+                } catch (JSONException je) {
+                    // If the field doesn't exist, it isn't the end of the world
+                }
 
+                /*
                 Bitmap bmp = scaleBitmap(
                         BitmapFactory.decodeStream(iconUrl.openConnection().getInputStream()),
                         StaticResources.mapThumbnailSize
                 );
+                */
+                int randomIcon = StaticResources.eventIcons[new Random().nextInt(StaticResources.numIcons)];
+                Bitmap bmp = BitmapLoader.getMarkerBitmapFromView(randomIcon, customMarkerView);
 
                 Log.d("FOUND EVENT", id + ":" + eventName);
-                newEvents.put(id, new Event(id, new LatLng(latitude, longitude), bmp, eventName));
+                newEvents.put(id, new Event(id, new LatLng(latitude, longitude), bmp, eventName, timeCreated, numParticipants));
             }
             rd.close();
         } catch (Exception ex) {
@@ -118,8 +160,7 @@ public class EventFetcher extends AsyncTask<String, String, String> {
         }
     }
 
-    @Override
-    protected void onPostExecute(String string) {
+    protected void onPostExecuteMap() {
         if (newEvents.isEmpty()) {
             mapFragment.showRetry();
             return;
@@ -149,6 +190,22 @@ public class EventFetcher extends AsyncTask<String, String, String> {
         );
         mapFragment.setOverhead(eventOfInterest);
         mapFragment.hideSpinner();
+    }
+
+    protected void onPostExecuteWeb() {
+        webFragment.setEvents(newEvents);
+        webFragment.setListViewContents();
+        webFragment.updateUrl(StaticResources.HTTP_PREFIX + StaticResources.ProdServer + StaticResources.GET_POINT_MODEL + eventID);
+    }
+
+    @Override
+    protected void onPostExecute(String string) {
+        if (mapFragment != null) {
+            onPostExecuteMap();
+        }
+        else {
+            onPostExecuteWeb();
+        }
     }
 
     protected void onProgressUpdate(String... progress) {

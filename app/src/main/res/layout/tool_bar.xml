@@ -25,7 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/selector_height"
             android:layout_alignParentBottom="true"
-            android:background="@color/selectorColor"
+            android:background="@color/colorAccent"
             />
     </RelativeLayout>
 
@@ -53,7 +53,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/selector_height"
             android:layout_alignParentBottom="true"
-            android:background="@color/selectorColor"
+            android:background="@color/colorAccent"
             />
     </RelativeLayout>
 
@@ -80,7 +80,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/selector_height"
             android:layout_alignParentBottom="true"
-            android:background="@color/selectorColor"
+            android:background="@color/colorAccent"
             />
     </RelativeLayout>
 

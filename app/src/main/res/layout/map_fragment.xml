@@ -41,6 +41,51 @@
             android:hint="@string/enter_event_name"
             android:visibility="gone"/>
 
+        <ImageView
+            android:id="@+id/type1"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:src="@drawable/arrow"
+            android:onClick="handleArrowClick"
+            android:visibility="gone"
+            />
+
+        <ImageView
+            android:id="@+id/type2"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:src="@drawable/arrow"
+            android:onClick="handleArrowClick"
+            android:visibility="gone"
+            />
+
+        <ImageView
+            android:id="@+id/type3"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:src="@drawable/arrow"
+            android:onClick="handleArrowClick"
+            android:visibility="gone"
+            />
+
+        <ImageView
+            android:id="@+id/type4"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:src="@drawable/arrow"
+            android:onClick="handleArrowClick"
+            android:visibility="gone"
+            />
+
+        <ImageView
+            android:id="@+id/type5"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:src="@drawable/arrow"
+            android:onClick="handleArrowClick"
+            android:visibility="gone"
+            />
+
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"

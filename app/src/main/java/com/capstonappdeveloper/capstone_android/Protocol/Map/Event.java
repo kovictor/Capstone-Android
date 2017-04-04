@@ -16,12 +16,26 @@ public class Event {
     public LatLng coordinates;
     public Bitmap icon;
     public String eventName;
+    public String timeCreated;
+    public int numParticipants;
     public Event(String id, LatLng coordinates, Bitmap icon, String eventName) {
         this.id = id;
         this.coordinates = coordinates;
         this.icon = icon;
         this.eventName = eventName;
+        this.timeCreated = null;
+        this.numParticipants = 0;
     }
+
+    public Event(String id, LatLng coordinates, Bitmap icon, String eventName, String timeCreated, int numParticipants) {
+        this.id = id;
+        this.coordinates = coordinates;
+        this.icon = icon;
+        this.eventName = eventName;
+        this.timeCreated = timeCreated;
+        this.numParticipants = numParticipants;
+    }
+
     public String getJSON() {
         try {
             JSONObject obj = new JSONObject();

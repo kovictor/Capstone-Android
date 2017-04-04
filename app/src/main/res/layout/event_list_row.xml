@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="@dimen/event_list_row_height"
+              android:padding="@dimen/general_padding"
+              android:gravity="center"
+              android:background="@drawable/row_background">
+    <ImageView
+        android:id="@+id/event_row_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginRight="@dimen/general_padding"
+        android:layout_alignParentLeft="true"
+        android:layout_centerInParent="true"/>
+
+    <TextView
+        android:id="@+id/event_row_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_toRightOf="@id/event_row_icon"/>
+
+    <TextView
+        android:id="@+id/event_time_created"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/event_row_icon"
+        android:layout_below="@id/event_row_title"
+        android:layout_centerInParent="true"/>
+
+    <TextView
+        android:id="@+id/event_num_participants"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerInParent="true"/>
+</RelativeLayout>

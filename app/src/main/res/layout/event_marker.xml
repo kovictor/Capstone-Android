@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:id="@+id/custom_marker_view"
+             android:layout_width="@dimen/selector_width"
+             android:layout_height="@dimen/selector_width"
+             android:background="@android:color/transparent">
+    <ImageView
+        android:layout_width="@dimen/selector_width"
+        android:layout_height="@dimen/selector_width"
+        android:layout_gravity="center"
+        android:contentDescription="@null"
+        android:src="@drawable/event_icon_bg"/>
+    <ImageView
+        android:id="@+id/event_marker_image"
+        android:layout_width="@dimen/event_marker_icon_size"
+        android:layout_height="@dimen/event_marker_icon_size"
+        android:layout_gravity="center"
+        android:contentDescription="@null"/>
+</FrameLayout>
