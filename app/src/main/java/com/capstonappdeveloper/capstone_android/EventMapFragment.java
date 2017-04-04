@@ -227,6 +227,7 @@ public class EventMapFragment extends Fragment
     public LatLng getHomeLocation() {
         return homeLocation;
     }
+    public void setHomeLocation(LatLng location) { this.homeLocation = location; }
 
     public void submitNewEvent() {
         if (createPin != null) {
