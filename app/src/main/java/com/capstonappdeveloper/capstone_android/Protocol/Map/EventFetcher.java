@@ -180,7 +180,7 @@ public class EventFetcher extends AsyncTask<String, String, String> {
         }
 
         //for now let's just zoom in on and focus on the event with id "test"
-        Event eventOfInterest = events.get("test");
+        Event eventOfInterest = events.values().iterator().next();
 
         map.animateCamera(
                 CameraUpdateFactory.newLatLngZoom(
