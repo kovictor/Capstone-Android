@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class PlaybackActivity extends AppCompatActivity {
     public static String FILE_PATH_EXTRA = "FILE_PATH";
     public static String FILE_NAME_BASE = "FILE_NAME";
-    public static int NUM_IMAGES_PER_SEQUENCE = 1;
+    public static int NUM_IMAGES_PER_SEQUENCE = 10;
     private static int IMAGE_SWITCH_DELAY = 200; //miliseconds
     private static int IMAGE_RESOLUTION = 100; //scaling bitmaps to save memory
     ImageView playbackView;
