@@ -79,6 +79,7 @@ public class CameraActivity extends Activity {
     public static final String CURRENT_EVENT_ID = "current_event_id";
     public static final String CURRENT_EVENT_NAME = "current_event_name";
     public static final String NUM_PARTICIPANTS = "num_participants";
+    public static final String CURRENT_EVENT_UID = "current_uid";
     public static final int IMAGE_FORMAT = ImageFormat.JPEG;
     private static final int ACTIVITY_START_CAMERA_APP = 0;
     private static enum CAPTURE_STATE {
@@ -100,6 +101,7 @@ public class CameraActivity extends Activity {
     private String eventID;
     private String eventName;
     private int numParticipants;
+    private int uid;
     private TextureView mTextureView;
     private TextView mTitle;
     private TextView mParticipantCount;
@@ -235,7 +237,7 @@ public class CameraActivity extends Activity {
             // Right now we're only doing 1 photo sequence at a time,
             // But if that changes, we should do a batch upload all in one server request
             int index = mImageFileLocation.lastIndexOf("/");
-            new VideoUploader(eventID, numParticipants).execute(mImageFileLocation.substring(0, index) + '/' + mImageHash + "_" + mSequenceNum);
+            new VideoUploader(eventID, uid).execute(mImageFileLocation.substring(0, index) + '/' + mImageHash + "_" + mSequenceNum);
 
             mSequenceNum++;
             //If this is the end of the image sequence, start the playback
@@ -381,6 +383,7 @@ public class CameraActivity extends Activity {
         this.eventID = getIntent().getStringExtra(CURRENT_EVENT_ID);
         this.eventName = getIntent().getStringExtra(CURRENT_EVENT_NAME);
         this.numParticipants = getIntent().getIntExtra(NUM_PARTICIPANTS, 0);
+        this.uid = getIntent().getIntExtra(CURRENT_EVENT_UID, 0);
         createImageGallery();
         unLockFocus();
 

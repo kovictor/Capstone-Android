@@ -163,10 +163,11 @@ public class EventMapFragment extends Fragment
         new EventFetcher(this).execute();
     }
 
-    public void enterEvent(int numParticipants) {
+    public void enterEvent(int uid, int numParticipants) {
         Intent intent = new Intent(getContext(), CameraActivity.class);
         intent.putExtra(CameraActivity.CURRENT_EVENT_ID, currentEvent.id);
         intent.putExtra(CameraActivity.CURRENT_EVENT_NAME, currentEvent.eventName);
+        intent.putExtra(CameraActivity.CURRENT_EVENT_UID, uid);
         intent.putExtra(CameraActivity.NUM_PARTICIPANTS, numParticipants);
         startActivity(intent);
     }
