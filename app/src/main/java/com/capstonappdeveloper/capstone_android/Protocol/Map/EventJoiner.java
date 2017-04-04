@@ -19,6 +19,7 @@ import java.net.URL;
 public class EventJoiner extends AsyncTask<String, String, String> {
 
     private int numParticipants = 0;
+    private int uid = 0;
     private String eventID;
     EventMapFragment mapFragment;
 
@@ -44,10 +45,16 @@ public class EventJoiner extends AsyncTask<String, String, String> {
     }
 
     String formURL() {
-        return StaticResources.HTTP_PREFIX +
-                StaticResources.ProdServer +
-                ((mapFragment == null) ? StaticResources.JOIN_EVENT_SCRIPT : StaticResources.LEAVE_EVENT_SCRIPT) +
-                mapFragment.getCurrentEventID();
+        if (mapFragment != null){
+            return StaticResources.HTTP_PREFIX +
+                    StaticResources.ProdServer + StaticResources.JOIN_EVENT_SCRIPT + mapFragment.getCurrentEventID();
+        } else {
+            return StaticResources.HTTP_PREFIX +
+                    StaticResources.ProdServer +
+                    StaticResources.LEAVE_EVENT_SCRIPT +
+                    eventID;
+        }
+
     }
 
     private void joinEvent() {
@@ -70,10 +77,12 @@ public class EventJoiner extends AsyncTask<String, String, String> {
             Log.d("JOIN EVENT WITH RESULT", response);
             //parse JSON
             JSONObject obj = new JSONObject(response);
+            this.uid = obj.getInt("current_uid");
             this.numParticipants = obj.getInt("num_participants");
             rd.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+            this.uid = 1;
             this.numParticipants = 1;
         } finally {
             if (conn != null) {
@@ -86,7 +95,7 @@ public class EventJoiner extends AsyncTask<String, String, String> {
     protected void onPostExecute(String string) {
         if (mapFragment != null) {
             mapFragment.hideSpinner();
-            mapFragment.enterEvent(this.numParticipants);
+            mapFragment.enterEvent(this.uid, this.numParticipants);
         }
     }
 }
