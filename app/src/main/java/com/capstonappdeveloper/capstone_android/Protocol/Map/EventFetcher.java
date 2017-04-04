@@ -131,9 +131,11 @@ public class EventFetcher extends AsyncTask<String, String, String> {
                 String eventName = e.getString("name");
                 String timeCreated = null;
                 int numParticipants = 0;
+                String status = null;
                 try {
                     timeCreated = e.getString("time_created");
                     numParticipants = e.getInt("num_participants");
+                    status = e.getString("status");
                 } catch (JSONException je) {
                     // If the field doesn't exist, it isn't the end of the world
                 }
@@ -144,11 +146,19 @@ public class EventFetcher extends AsyncTask<String, String, String> {
                         StaticResources.mapThumbnailSize
                 );
                 */
-                int randomIcon = StaticResources.eventIcons[new Random().nextInt(StaticResources.numIcons)];
-                Bitmap bmp = BitmapLoader.getMarkerBitmapFromView(randomIcon, customMarkerView);
+                int icon;
+                switch (status) {
+                    case "PROCESSING":
+                        icon = R.drawable.processing;
+                        break;
+                    default:
+                        icon = StaticResources.eventIcons[new Random().nextInt(StaticResources.numIcons)];
+                        break;
+                }
+                Bitmap bmp = BitmapLoader.getMarkerBitmapFromView(icon, customMarkerView);
 
                 Log.d("FOUND EVENT", id + ":" + eventName);
-                newEvents.put(id, new Event(id, new LatLng(latitude, longitude), bmp, eventName, timeCreated, numParticipants));
+                newEvents.put(id, new Event(id, new LatLng(latitude, longitude), bmp, eventName, timeCreated, numParticipants, status));
             }
             rd.close();
         } catch (Exception ex) {

@@ -34,6 +34,8 @@ public class WebFragment extends Fragment {
     private String URL;
     private ProgressBar dialog;
     private ListView listView;
+    private View processingOverlay;
+    private WebView webview;
     public void init(String url) {
         URL = url;
     }
@@ -109,6 +111,7 @@ public class WebFragment extends Fragment {
                              Bundle savedInstanceState) {
         final View parentView = inflater.inflate(R.layout.webview_layout, container, false);
         dialog = (ProgressBar) parentView.findViewById(R.id.load_spinner);
+        processingOverlay = parentView.findViewById(R.id.processing_overlay);
         listView = (ListView) parentView.findViewById(R.id.events_list);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -116,14 +119,20 @@ public class WebFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, final View view,
                                     int position, long id) {
                 final Event item = (Event) parent.getItemAtPosition(position);
-                updateUrl(StaticResources.HTTP_PREFIX + StaticResources.ProdServer + StaticResources.GET_MESH_MODEL + item.id);
+                if (item.status.equals("FINISHED")) {
+                    removeProcessingOverlay();
+                    updateUrl(StaticResources.HTTP_PREFIX + StaticResources.ProdServer + StaticResources.GET_MESH_MODEL + item.id);
+                }
+                else {
+                    showProcessingOverlay();
+                }
             }
 
         });
 
         events = new HashMap<String, Event>();
 
-        WebView webview = (WebView) parentView.findViewById(R.id.webview);
+        webview = (WebView) parentView.findViewById(R.id.webview);
         webview.getSettings().setLoadWithOverviewMode(true);
         webview.getSettings().setUseWideViewPort(true);
         webview.setWebViewClient(new WebViewClient() {
@@ -141,6 +150,16 @@ public class WebFragment extends Fragment {
         webview.setHorizontalScrollBarEnabled(false);
         fetchEvents();
         return parentView;
+    }
+
+    public void showProcessingOverlay() {
+        webview.setVisibility(View.GONE);
+        processingOverlay.setVisibility(View.VISIBLE);
+    }
+
+    public void removeProcessingOverlay() {
+        webview.setVisibility(View.VISIBLE);
+        processingOverlay.setVisibility(View.GONE);
     }
 
     public void updateUrl(String url) {

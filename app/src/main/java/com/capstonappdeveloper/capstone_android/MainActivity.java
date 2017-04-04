@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
@@ -26,13 +27,14 @@ import com.google.android.gms.maps.model.LatLng;
  * but eventually we'll probably want to move to something like a viewPager
  * so that we can switch fragments while maintaining fragment state
  */
-public class MainActivity extends FragmentActivity implements ConnectionCallbacks, OnConnectionFailedListener {
+public class MainActivity extends FragmentActivity implements ConnectionCallbacks, OnConnectionFailedListener, OnRequestPermissionsResultCallback {
     EventMapFragment mapFragment;
     WebFragment webFragment;
     Fragment currentFragment;
     View menuSelector, mapSelector, videoSelector;
     GoogleApiClient mGoogleApiClient;
     LatLng mLastLocation;
+    static final int COARSE_LOCATION_REQUEST = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,9 +52,13 @@ public class MainActivity extends FragmentActivity implements ConnectionCallback
 
         if ( ContextCompat.checkSelfPermission( this, android.Manifest.permission.ACCESS_COARSE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
             ActivityCompat.requestPermissions( this, new String[] {  android.Manifest.permission.ACCESS_COARSE_LOCATION  },
-                    0 );
+                    COARSE_LOCATION_REQUEST);
+        } else {
+            createLocationAPIClient();
         }
+    }
 
+    public void createLocationAPIClient() {
         // Create an instance of GoogleAPIClient.
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -146,6 +152,20 @@ public class MainActivity extends FragmentActivity implements ConnectionCallback
         mLastLocation = new LatLng(currentLocation.getLatitude(), currentLocation.getLatitude());
         if (mLastLocation != null) {
             switchToMap(null);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult (int requestCode,
+                                     String[] permissions,
+                                     int[] grantResults) {
+        switch (requestCode) {
+            case COARSE_LOCATION_REQUEST:
+                createLocationAPIClient();
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                break;
         }
     }
 

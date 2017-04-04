@@ -12,6 +12,8 @@
     <dimen name="tool_bar_title_size">15dp</dimen>
     <dimen name="event_list_row_height">75dp</dimen>
     <dimen name="event_marker_icon_size">30dp</dimen>
+    <dimen name="processing_icon_size">75dp</dimen>
+
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>

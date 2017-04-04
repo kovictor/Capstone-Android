@@ -33,4 +33,27 @@
         android:layout_centerVertical="true"
         android:visibility="gone">
     </ProgressBar>
+
+    <RelativeLayout
+        android:id="@+id/processing_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/events_list"
+        android:visibility="gone">
+        <ImageView
+            android:id="@+id/processing_icon"
+            android:layout_width="@dimen/processing_icon_size"
+            android:layout_height="@dimen/processing_icon_size"
+            android:src="@drawable/processing"
+            android:layout_centerInParent="true"
+            />
+        <TextView
+            android:id="@+id/processing_text"
+            android:layout_below="@id/processing_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/general_padding"
+            android:layout_centerHorizontal="true"
+            android:text="@string/processing_text"/>
+        </RelativeLayout>
 </RelativeLayout>
